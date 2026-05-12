@@ -23,6 +23,7 @@ interface CartStore {
   close:     () => void
   toggle:    () => void
   getTotal:  () => number
+  clear:     () => void
 }
 
 export const useCartStore = create<CartStore>((set, get) => ({
@@ -46,4 +47,5 @@ export const useCartStore = create<CartStore>((set, get) => ({
   close:    () => set({ isOpen: false }),
   toggle:   () => set((s) => ({ isOpen: !s.isOpen })),
   getTotal: () => get().items.reduce((sum, it) => sum + it.price * it.quantity, 0),
+  clear:    () => set({ items: [], isOpen: false }),
 }))
