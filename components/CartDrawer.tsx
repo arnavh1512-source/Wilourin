@@ -57,7 +57,7 @@ export function CartDrawer() {
             </div>
           ) : items.map((it, i) => (
             <div key={i} style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: 18, padding: '20px 0', borderBottom: `1px solid ${C.marbleLine}`, alignItems: 'start' }}>
-              <div style={{ height: 100, background: '#fafaf7', border: `1px solid ${C.marbleLine}`, overflow: 'hidden', position: 'relative' }}>
+              <div style={{ height: 120, background: '#fafaf7', border: `1px solid ${C.marbleLine}`, overflow: 'hidden', position: 'relative' }}>
                 <Image src={it.img} alt={it.name} fill style={{ objectFit: 'cover', objectPosition: 'top' }} sizes="80px" />
               </div>
               <div>

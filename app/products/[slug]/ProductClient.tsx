@@ -81,7 +81,7 @@ export function ProductClient({ product }: { product: Product }) {
       <div className="product-layout" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0, maxWidth: 1200, margin: '0 auto' }}>
         {/* Images */}
         <div style={{ padding: '40px 40px 40px 40px', position: 'sticky', top: 0, height: 'fit-content' }}>
-          <div style={{ position: 'relative', aspectRatio: '3/4', background: '#fafaf7', border: `1px solid ${C.marbleLine}`, overflow: 'hidden', marginBottom: 12 }}>
+          <div style={{ position: 'relative', aspectRatio: '2/3', background: '#fafaf7', border: `1px solid ${C.marbleLine}`, overflow: 'hidden', marginBottom: 12 }}>
             {(activeImg || images[0]?.url) && (
               <Image src={activeImg || images[0]?.url} alt={product.name} fill style={{ objectFit: 'cover', objectPosition: 'top center' }} sizes="(max-width: 900px) 100vw, 50vw" />
             )}

@@ -115,7 +115,7 @@ export default function AdminProducts() {
           {products.map(p => (
             <div key={p.id} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', padding: '16px 20px', borderBottom: '1px solid rgba(21,20,15,0.06)', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                {p.product_images?.[0] && <img src={p.product_images[0].url} alt={p.name} style={{ width: 40, height: 48, objectFit: 'cover' }} />}
+                {p.product_images?.[0] && <img src={p.product_images[0].url} alt={p.name} style={{ width: 40, height: 60, objectFit: 'cover', objectPosition: 'top center' }} />}
                 <div style={{ ...F, fontSize: 13, color: '#15140f', fontWeight: 600 }}>{p.name}</div>
               </div>
               <div style={{ ...F, fontSize: 12, color: 'rgba(21,20,15,0.55)' }}>{p.category || '—'}</div>
