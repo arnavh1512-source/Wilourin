@@ -14,8 +14,8 @@ const C = {
 }
 
 const FALLBACK = [
-  { id: 'f1', name: 'Oversized Blazer', slug: null, price: 4200, original_price: null, badge: null, product_images: [{ url: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=800&q=80', is_primary: true, display_order: 0 }] },
-  { id: 'f2', name: 'Bias Mini',        slug: null, price: 2800, original_price: null, badge: null, product_images: [{ url: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80', is_primary: true, display_order: 0 }] },
+  { id: 'f1', name: 'Oversized Blazer', slug: null, price: 4200, original_price: null, badge: null, product_images: [{ url: '/productBlazer.png', is_primary: true, display_order: 0 }] },
+  { id: 'f2', name: 'Bias Mini',        slug: null, price: 2800, original_price: null, badge: null, product_images: [{ url: '/productDress.png',  is_primary: true, display_order: 0 }] },
 ]
 
 interface ProductImage { url: string; is_primary: boolean; display_order: number }
@@ -23,7 +23,7 @@ interface Product { id: string; name: string; slug: string | null; price: number
 
 function ProductCard({ p }: { p: Product }) {
   const [hover, setHover] = useState(false)
-  const img = p.product_images?.sort((a, b) => a.display_order - b.display_order)[0]?.url ?? 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=800&q=80'
+  const img = p.product_images?.sort((a, b) => a.display_order - b.display_order)[0]?.url ?? '/productBlazer.png'
 
   const card = (
     <div style={{ display: 'flex', flexDirection: 'column' }}>

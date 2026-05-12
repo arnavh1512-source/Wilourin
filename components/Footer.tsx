@@ -105,7 +105,7 @@ export function Footer() {
       {/* Bottom */}
       <div className="footer-bottom" style={{ paddingTop: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 30 }}>
         <div style={{ filter: 'brightness(0) invert(1)' }}>
-          <Logo dark={false} height={120} />
+          <Logo height={120} />
         </div>
         <div style={{ fontFamily: "'Raleway',sans-serif", fontSize: 14, letterSpacing: 2, color: C.creamFaint, textTransform: 'uppercase', fontWeight: 600, textAlign: 'right', lineHeight: 1.8 }}>
           © 2026 WILOURIN STUDIO PVT LTD<br />

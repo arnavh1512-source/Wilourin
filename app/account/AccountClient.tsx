@@ -90,7 +90,7 @@ export function AccountClient({ user, profile, orders }: Props) {
     <div style={{ minHeight: '100vh', background: C.marbleBase }}>
       {/* Header */}
       <div style={{ borderBottom: `1px solid ${C.marbleLine}`, padding: '24px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <a href="/" style={{ display: 'block' }}><Logo dark height={40} /></a>
+        <a href="/" style={{ display: 'block' }}><Logo height={40} /></a>
         <button onClick={signOut} style={{ background: 'transparent', border: `1px solid ${C.marbleLine}`, padding: '8px 20px', fontFamily: "'Raleway',sans-serif", fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', cursor: 'pointer', color: C.inkFaint }}>
           Sign out
         </button>

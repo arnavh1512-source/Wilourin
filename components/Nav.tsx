@@ -65,7 +65,7 @@ export function Nav() {
 
         {/* Center — Logo */}
         <Link href="/" style={{ display: 'flex', justifyContent: 'center' }}>
-          <Logo dark height={50} />
+          <Logo height={50} />
         </Link>
 
         {/* Right */}

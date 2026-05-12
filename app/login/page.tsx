@@ -63,7 +63,7 @@ export default function LoginPage() {
     <div style={{ minHeight: '100vh', background: C.marbleBase, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
       <div style={{ width: '100%', maxWidth: 400, textAlign: 'center' }}>
         <div style={{ marginBottom: 48 }}>
-          <Logo dark height={64} />
+          <Logo height={64} />
         </div>
 
         <h1 style={{ fontFamily: "'Prata',serif", fontSize: 28, color: C.marbleInk, marginBottom: 8, fontWeight: 400 }}>
