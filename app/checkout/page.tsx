@@ -46,12 +46,12 @@ export default function CheckoutPage() {
 
     setPaying(true); setError('')
     const supabase = createClient()
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) { router.push('/login?next=/checkout'); return }
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { router.push('/login?next=/checkout'); return }
 
     const res = await fetch('/api/checkout', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', authorization: `Bearer ${session.access_token}` },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ items, shipping, total }),
     })
     const data = await res.json()
