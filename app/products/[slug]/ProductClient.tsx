@@ -35,7 +35,7 @@ export function ProductClient({ product }: { product: Product }) {
   const images = [...product.product_images].sort((a, b) => a.display_order - b.display_order)
   const variants = product.product_variants ?? []
 
-  const [activeImg, setActiveImg] = useState(images[0]?.url ?? '')
+  const [activeImg, setActiveImg] = useState(0)
   const [selectedSize, setSelectedSize] = useState('')
   const [fitOpen, setFitOpen] = useState(false)
   const [fit, setFit] = useState<Record<string, number>>(() => Object.fromEntries(FIT_MEASURES.map(m => [m.key, 0])))
@@ -55,7 +55,7 @@ export function ProductClient({ product }: { product: Product }) {
       id: product.id,
       variantId: variant?.id,
       name: product.name,
-      img: images[0]?.url ?? '',
+      img: images[activeImg]?.url ?? images[0]?.url ?? '',
       price: product.price,
       size: selectedSize,
       quantity: 1,
@@ -73,28 +73,27 @@ export function ProductClient({ product }: { product: Product }) {
 
   return (
     <div style={{ minHeight: '100vh', background: C.marbleBase }}>
-      {/* Back nav */}
-      <div style={{ padding: '20px 40px', borderBottom: `1px solid ${C.marbleLine}` }}>
+      {/* Back nav + image counter */}
+      <div style={{ padding: '20px 40px', borderBottom: `1px solid ${C.marbleLine}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <a href="/#collection" style={{ ...F, fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: C.inkFaint, textDecoration: 'none' }}>← The Collection</a>
+        {images.length > 1 && (
+          <span style={{ ...F, fontSize: 10, letterSpacing: 2, color: C.inkFaint }}>{activeImg + 1} / {images.length}</span>
+        )}
       </div>
 
       <div className="product-layout" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0, maxWidth: 1200, margin: '0 auto' }}>
-        {/* Images */}
-        <div style={{ padding: '40px 40px 40px 40px', position: 'sticky', top: 0, height: 'fit-content' }}>
-          <div style={{ position: 'relative', aspectRatio: '3/4', background: '#fafaf7', border: `1px solid ${C.marbleLine}`, overflow: 'hidden', marginBottom: 12 }}>
-            {(activeImg || images[0]?.url) && (
-              <Image src={activeImg || images[0]?.url} alt={product.name} fill style={{ objectFit: 'cover', objectPosition: 'top center' }} sizes="(max-width: 900px) 100vw, 50vw" />
-            )}
-          </div>
-          {images.length > 1 && (
-            <div style={{ display: 'flex', gap: 8 }}>
-              {images.map(img => (
-                <button key={img.id} onClick={() => setActiveImg(img.url)}
-                  style={{ position: 'relative', width: 64, height: 80, border: `1px solid ${activeImg === img.url ? C.marbleInk : C.marbleLine}`, overflow: 'hidden', cursor: 'pointer', background: 'none', padding: 0, transition: 'border-color 0.2s' }}>
-                  <Image src={img.url} alt="" fill style={{ objectFit: 'cover', objectPosition: 'top center' }} sizes="64px" />
-                </button>
-              ))}
+        {/* Stacked full-bleed images */}
+        <div style={{ padding: '40px 40px 40px 40px' }}>
+          {images.length > 0 ? images.map((img, i) => (
+            <div key={img.id}
+              onMouseEnter={() => setActiveImg(i)}
+              style={{ position: 'relative', aspectRatio: '3/4', background: '#fafaf7', border: `1px solid ${C.marbleLine}`, overflow: 'hidden', marginBottom: 12 }}>
+              <Image src={img.url} alt={`${product.name} ${i + 1}`} fill
+                style={{ objectFit: 'cover', objectPosition: 'top center' }}
+                sizes="(max-width: 900px) 100vw, 50vw" priority={i === 0} />
             </div>
+          )) : (
+            <div style={{ aspectRatio: '3/4', background: '#fafaf7', border: `1px solid ${C.marbleLine}` }} />
           )}
         </div>
 
