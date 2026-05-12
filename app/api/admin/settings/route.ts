@@ -15,12 +15,9 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const admin = createAdmin()
-  const { data, error } = await admin.from('site_settings').select('*')
+  const { data, error } = await admin.from('site_settings').select('*').single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-
-  const settings: Record<string, string> = {}
-  for (const row of data ?? []) settings[row.key] = row.value
-  return NextResponse.json({ data: settings })
+  return NextResponse.json({ data })
 }
 
 export async function PATCH(req: NextRequest) {
@@ -28,10 +25,14 @@ export async function PATCH(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await req.json()
-  const admin = createAdmin()
+  const allowed = ['hero_video_url', 'hero_headline', 'free_shipping_threshold', 'shipping_cost']
+  const updates: Record<string, unknown> = {}
+  for (const key of allowed) {
+    if (key in body) updates[key] = body[key]
+  }
 
-  const upserts = Object.entries(body as Record<string, string>).map(([key, value]) => ({ key, value }))
-  const { error } = await admin.from('site_settings').upsert(upserts, { onConflict: 'key' })
+  const admin = createAdmin()
+  const { data, error } = await admin.from('site_settings').update(updates).eq('id', 1).select().single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ success: true })
+  return NextResponse.json({ data })
 }

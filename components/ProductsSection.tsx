@@ -2,35 +2,30 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { useCartStore } from '@/lib/store'
+import Link from 'next/link'
 
 const C = {
-  marbleBase:    '#f4f1ec',
-  marbleInk:     '#15140f',
-  marbleInkFaint:'rgba(21,20,15,0.58)',
-  marbleLine:    'rgba(21,20,15,0.22)',
-  forestDark:    '#0d2818',
-  cream:         '#e8e4d8',
+  marbleBase:     '#f4f1ec',
+  marbleInk:      '#15140f',
+  marbleInkFaint: 'rgba(21,20,15,0.58)',
+  marbleLine:     'rgba(21,20,15,0.22)',
+  forestDark:     '#0d2818',
+  cream:          '#e8e4d8',
 }
 
-const PRODUCTS = [
-  {
-    id: 'blazer',
-    name: 'Oversized Blazer',
-    img: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=800&q=80',
-  },
-  {
-    id: 'dress',
-    name: 'Bias Mini',
-    img: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80',
-  },
+const FALLBACK = [
+  { id: 'f1', name: 'Oversized Blazer', slug: null, price: 4200, original_price: null, badge: null, product_images: [{ url: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=800&q=80', is_primary: true, display_order: 0 }] },
+  { id: 'f2', name: 'Bias Mini',        slug: null, price: 2800, original_price: null, badge: null, product_images: [{ url: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80', is_primary: true, display_order: 0 }] },
 ]
 
-function ProductCard({ p }: { p: typeof PRODUCTS[0] }) {
-  const [hover, setHover] = useState(false)
-  const add = useCartStore((s) => s.add)
+interface ProductImage { url: string; is_primary: boolean; display_order: number }
+interface Product { id: string; name: string; slug: string | null; price: number; original_price?: number | null; badge?: string | null; product_images?: ProductImage[] }
 
-  return (
+function ProductCard({ p }: { p: Product }) {
+  const [hover, setHover] = useState(false)
+  const img = p.product_images?.sort((a, b) => a.display_order - b.display_order)[0]?.url ?? 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=800&q=80'
+
+  const card = (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       <div
         onMouseEnter={() => setHover(true)}
@@ -45,53 +40,49 @@ function ProductCard({ p }: { p: typeof PRODUCTS[0] }) {
         }}
       >
         <Image
-          src={p.img}
-          alt={p.name}
-          fill
+          src={img} alt={p.name} fill
           sizes="(max-width: 700px) 100vw, 50vw"
-          style={{
-            objectFit: 'cover', objectPosition: 'top center',
-            transform: hover ? 'scale(1.04)' : 'scale(1)',
-            transition: 'transform 1.2s cubic-bezier(.2,.8,.2,1)',
-          }}
+          style={{ objectFit: 'cover', objectPosition: 'top center', transform: hover ? 'scale(1.04)' : 'scale(1)', transition: 'transform 1.2s cubic-bezier(.2,.8,.2,1)' }}
         />
-        {/* corner accents */}
         <div style={{ position: 'absolute', top: 10, left: 10, width: 12, height: 12, borderTop: '1px solid rgba(232,228,216,0.6)', borderLeft: '1px solid rgba(232,228,216,0.6)' }} />
         <div style={{ position: 'absolute', top: 10, right: 10, width: 12, height: 12, borderTop: '1px solid rgba(232,228,216,0.6)', borderRight: '1px solid rgba(232,228,216,0.6)' }} />
+        {p.badge && (
+          <div style={{ position: 'absolute', bottom: 14, left: 14, background: C.forestDark, color: C.cream, padding: '4px 10px', fontFamily: "'Raleway',sans-serif", fontSize: 9, letterSpacing: 2, textTransform: 'uppercase' }}>{p.badge}</div>
+        )}
       </div>
 
-      <div style={{ paddingTop: 20, display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <div style={{ fontFamily: "'Prata',serif", fontSize: 22, color: C.marbleInk, lineHeight: 1.15, letterSpacing: '-0.01em' }}>
-          {p.name}
+      <div style={{ paddingTop: 20, display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <div style={{ fontFamily: "'Prata',serif", fontSize: 22, color: C.marbleInk, lineHeight: 1.15, letterSpacing: '-0.01em' }}>{p.name}</div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
+          <span style={{ fontFamily: "'Prata',serif", fontSize: 16, color: C.marbleInk }}>₹{Number(p.price).toLocaleString('en-IN')}</span>
+          {p.original_price && <span style={{ fontFamily: "'Raleway',sans-serif", fontSize: 12, color: C.marbleInkFaint, textDecoration: 'line-through' }}>₹{Number(p.original_price).toLocaleString('en-IN')}</span>}
         </div>
-        <button
-          onClick={() => add({ id: p.id, name: p.name, img: p.img })}
+        <div
           style={{
-            marginTop: 14, padding: '13px 0',
-            background: 'transparent', color: C.marbleInk,
+            marginTop: 10, padding: '13px 0',
+            background: hover ? C.forestDark : 'transparent',
+            color: hover ? C.cream : C.marbleInk,
             border: `1px solid ${C.marbleLine}`,
             fontFamily: "'Raleway',sans-serif", fontSize: 9,
             letterSpacing: 3, textTransform: 'uppercase', fontWeight: 600,
-            cursor: 'pointer', transition: 'background 0.25s, color 0.25s',
+            textAlign: 'center', transition: 'background 0.25s, color 0.25s',
           }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = C.forestDark; e.currentTarget.style.color = C.cream }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = C.marbleInk }}
         >
-          Add to bag →
-        </button>
+          Select Size →
+        </div>
       </div>
     </div>
   )
+
+  if (p.slug) return <Link href={`/products/${p.slug}`} style={{ textDecoration: 'none' }}>{card}</Link>
+  return card
 }
 
-export function ProductsSection() {
+export function ProductsSection({ products }: { products: Product[] }) {
+  const display = products.length > 0 ? products : FALLBACK
+
   return (
-    <section
-      id="collection"
-      className="products-section"
-      style={{ backgroundColor: C.marbleBase, padding: '100px 40px 120px', position: 'relative' }}
-    >
-      {/* Section head */}
+    <section id="collection" className="products-section" style={{ backgroundColor: C.marbleBase, padding: '100px 40px 120px', position: 'relative' }}>
       <div style={{ borderBottom: `1px solid ${C.marbleLine}`, paddingBottom: 28, marginBottom: 64 }} className="section-head">
         <h2 style={{ fontFamily: "'Prata',serif", fontSize: 'clamp(44px,6vw,80px)', lineHeight: 0.95, margin: 0, fontWeight: 400, color: C.marbleInk, letterSpacing: '-0.015em' }}>
           The Collection
@@ -99,7 +90,7 @@ export function ProductsSection() {
       </div>
 
       <div className="products-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 40 }}>
-        {PRODUCTS.map((p) => <ProductCard key={p.id} p={p} />)}
+        {display.map(p => <ProductCard key={p.id} p={p} />)}
       </div>
 
       <style>{`

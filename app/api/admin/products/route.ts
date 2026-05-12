@@ -10,6 +10,10 @@ async function requireAdmin() {
   return profile?.role === 'admin' ? user : null
 }
 
+function toSlug(name: string) {
+  return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '-' + Date.now().toString(36)
+}
+
 export async function GET() {
   const user = await requireAdmin()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -29,14 +33,14 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await req.json()
-  const { name, description, price, compare_at_price, category, featured, images = [], variants = [] } = body
+  const { name, description, price, original_price, category, is_published, images = [], variants = [] } = body
 
   if (!name || !price) return NextResponse.json({ error: 'name and price are required' }, { status: 400 })
 
   const admin = createAdmin()
   const { data: product, error } = await admin
     .from('products')
-    .insert({ name, description, price, compare_at_price, category, featured: !!featured })
+    .insert({ name, slug: toSlug(name), description, price, original_price: original_price || null, category: category || null, is_published: !!is_published })
     .select()
     .single()
 
@@ -44,13 +48,13 @@ export async function POST(req: NextRequest) {
 
   if (images.length) {
     await admin.from('product_images').insert(
-      images.map((url: string, i: number) => ({ product_id: product.id, url, position: i }))
+      images.map((url: string, i: number) => ({ product_id: product.id, url, is_primary: i === 0, display_order: i }))
     )
   }
 
   if (variants.length) {
     await admin.from('product_variants').insert(
-      variants.map((v: { size: string; stock: number }) => ({ product_id: product.id, size: v.size, stock: v.stock ?? 0 }))
+      variants.map((v: { size: string; stock_qty: number }) => ({ product_id: product.id, size: v.size, stock_qty: v.stock_qty ?? 0 }))
     )
   }
 
@@ -62,12 +66,10 @@ export async function PATCH(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await req.json()
-  const { id, ...updates } = body
+  const { id, variants, images, ...productFields } = body
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
 
   const admin = createAdmin()
-  const { variants, images, ...productFields } = updates
-
   const { data, error } = await admin.from('products').update(productFields).eq('id', id).select().single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
@@ -75,7 +77,7 @@ export async function PATCH(req: NextRequest) {
     await admin.from('product_variants').delete().eq('product_id', id)
     if (variants.length) {
       await admin.from('product_variants').insert(
-        variants.map((v: { size: string; stock: number }) => ({ product_id: id, size: v.size, stock: v.stock ?? 0 }))
+        variants.map((v: { size: string; stock_qty: number }) => ({ product_id: id, size: v.size, stock_qty: v.stock_qty ?? 0 }))
       )
     }
   }

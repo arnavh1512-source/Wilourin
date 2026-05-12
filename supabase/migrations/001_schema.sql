@@ -1,4 +1,5 @@
 -- ─── WILOURIN — Full Schema Migration ───────────────────────────────────────
+-- ─── WILOURIN — Full Schema Migration ───────────────────────────────────────
 -- Run this once in Supabase Dashboard → SQL Editor → New query → Paste → Run
 
 -- ── PROFILES ────────────────────────────────────────────────────────────────
