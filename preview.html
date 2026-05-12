@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wilourin — UI Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Prata&family=Raleway:wght@300;400;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #f4f1ec; font-family: 'Raleway', sans-serif; color: #15140f; }
+
+  /* ── NAV ─────────────────────────────────────────── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 40px; height: 64px;
+    background: rgba(244,241,236,0.9); backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(21,20,15,0.1);
+  }
+  .logo { font-family: 'Prata', serif; font-size: 22px; letter-spacing: 0.04em; }
+  .nav-links { display: flex; gap: 32px; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: rgba(21,20,15,0.65); cursor: pointer; }
+
+  /* ── PAGE TABS ───────────────────────────────────── */
+  .tabs { display: flex; gap: 2px; padding: 20px 40px; background: #eae7e0; }
+  .tab {
+    padding: 10px 24px; font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase;
+    cursor: pointer; border: 1px solid transparent; transition: all 0.2s;
+    background: transparent; color: rgba(21,20,15,0.55);
+  }
+  .tab.active { background: #15140f; color: #e8e4d8; }
+
+  /* ── VIEWS ───────────────────────────────────────── */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ────────────────────────────────────────────────── */
+  /* VIEW 1: HOMEPAGE                                   */
+  /* ────────────────────────────────────────────────── */
+
+  .collection-header {
+    padding: 80px 40px 32px;
+    display: flex; justify-content: space-between; align-items: flex-end;
+  }
+  .collection-header h2 { font-family: 'Prata', serif; font-size: clamp(40px,5.5vw,72px); font-weight: 400; line-height: 0.95; letter-spacing: -0.015em; }
+  .piece-count { font-size: 10px; letter-spacing: 3px; color: rgba(21,20,15,0.5); text-transform: uppercase; padding-bottom: 6px; }
+
+  .zara-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; padding: 0 2px 2px; }
+
+  .card { position: relative; aspect-ratio: 2/3; overflow: hidden; background: #ede9e2; cursor: pointer; }
+
+  .card img.primary {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top center;
+    transition: transform 1.4s cubic-bezier(.2,.8,.2,1), opacity 0.5s ease;
+  }
+  .card img.secondary {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top center;
+    opacity: 0; transition: opacity 0.5s ease;
+  }
+  .card:hover img.primary { transform: scale(1.0); }
+  .card:hover img.secondary { opacity: 1; }
+
+  .card-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(21,20,15,0.72) 0%, rgba(21,20,15,0.18) 45%, transparent 70%);
+    opacity: 0; transition: opacity 0.35s ease;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 0 18px 22px;
+  }
+  .card:hover .card-overlay { opacity: 1; }
+
+  .overlay-text {
+    transform: translateY(12px); transition: transform 0.35s ease;
+  }
+  .card:hover .overlay-text { transform: translateY(0); }
+
+  .overlay-name { font-family: 'Prata', serif; font-size: 20px; color: #fff; line-height: 1.15; margin-bottom: 6px; }
+  .overlay-price { font-family: 'Prata', serif; font-size: 15px; color: rgba(255,255,255,0.9); }
+  .overlay-original { font-size: 12px; color: rgba(255,255,255,0.5); text-decoration: line-through; margin-left: 8px; }
+
+  .card-badge {
+    position: absolute; top: 14px; left: 14px; z-index: 2;
+    font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: #15140f; background: #e8e4d8; padding: 4px 8px;
+  }
+
+  /* ────────────────────────────────────────────────── */
+  /* VIEW 2: PRODUCT DETAIL PAGE                        */
+  /* ────────────────────────────────────────────────── */
+
+  .pdp { display: grid; grid-template-columns: 60% 40%; align-items: start; }
+
+  .pdp-images { position: relative; }
+  .pdp-images .back-link {
+    position: absolute; top: 20px; left: 20px; z-index: 10;
+    font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: rgba(255,255,255,0.8); background: rgba(0,0,0,0.25);
+    padding: 6px 12px; backdrop-filter: blur(4px); text-decoration: none;
+  }
+  .pdp-img { position: relative; aspect-ratio: 2/3; background: #ede9e2; overflow: hidden; }
+  .pdp-img img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+
+  .pdp-panel {
+    position: sticky; top: 0; height: 100vh; overflow-y: auto;
+    padding: 48px 40px 48px 32px;
+    display: flex; flex-direction: column;
+  }
+
+  .pdp-badge {
+    display: inline-block; font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase;
+    border: 1px solid rgba(21,20,15,0.15); padding: 4px 10px; margin-bottom: 20px; align-self: flex-start;
+  }
+  .pdp-name { font-family: 'Prata', serif; font-size: clamp(26px,3vw,38px); font-weight: 400; line-height: 1.1; margin-bottom: 12px; }
+  .pdp-price { font-family: 'Prata', serif; font-size: 22px; }
+  .pdp-original { font-size: 14px; color: rgba(21,20,15,0.5); text-decoration: line-through; margin-left: 10px; }
+  .pdp-desc { font-size: 13px; color: rgba(21,20,15,0.75); line-height: 1.75; margin: 20px 0 28px; }
+
+  .divider { height: 1px; background: rgba(21,20,15,0.15); margin-bottom: 28px; }
+
+  .size-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .size-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: rgba(21,20,15,0.5); }
+  .size-guide { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(21,20,15,0.5); text-decoration: underline; background: none; border: none; cursor: pointer; }
+
+  .size-grid { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .size-btn {
+    min-width: 48px; height: 48px; padding: 0 8px;
+    border: 1px solid rgba(21,20,15,0.15); background: transparent;
+    font-family: 'Raleway', sans-serif; font-size: 11px; letter-spacing: 1px;
+    cursor: pointer; transition: all 0.15s; color: #15140f;
+  }
+  .size-btn:hover { border-color: #15140f; }
+  .size-btn.active { background: #15140f; color: #e8e4d8; border-color: #15140f; }
+  .size-btn.soldout { color: rgba(21,20,15,0.22); cursor: not-allowed; position: relative; overflow: hidden; }
+  .size-btn.soldout::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top right, transparent calc(50% - 0.5px), rgba(21,20,15,0.15) calc(50% - 0.5px), rgba(21,20,15,0.15) calc(50% + 0.5px), transparent calc(50% + 0.5px)); }
+
+  .fit-section { border-top: 1px solid rgba(21,20,15,0.15); border-bottom: 1px solid rgba(21,20,15,0.15); margin-bottom: 24px; }
+  .fit-toggle { width: 100%; padding: 16px 0; background: transparent; border: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-family: 'Raleway', sans-serif; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #15140f; }
+  .fit-body { padding-bottom: 20px; }
+  .fit-row { margin-bottom: 18px; }
+  .fit-row-header { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; }
+  .fit-val { font-family: 'Prata', serif; font-size: 13px; color: rgba(21,20,15,0.5); }
+  .fit-val.adjusted { color: #1f4a30; }
+  .slider-wrap { position: relative; height: 20px; display: flex; align-items: center; }
+  .slider-track { position: absolute; left: 0; right: 0; height: 1px; background: rgba(21,20,15,0.15); }
+  input[type=range] { width: 100%; appearance: none; background: transparent; cursor: pointer; position: relative; z-index: 1; }
+  input[type=range]::-webkit-slider-thumb { appearance: none; width: 13px; height: 13px; background: #15140f; border-radius: 0; cursor: pointer; }
+  input[type=range]::-moz-range-thumb { width: 13px; height: 13px; background: #15140f; border: none; border-radius: 0; cursor: pointer; }
+
+  .add-btn {
+    width: 100%; padding: 15px 0; background: #15140f; color: #e8e4d8; border: none;
+    font-family: 'Raleway', sans-serif; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; font-weight: 600;
+    cursor: pointer; transition: background 0.3s; margin-bottom: 12px;
+  }
+  .add-btn:hover { background: #0d2818; }
+  .add-btn.added { background: #1f4a30; }
+
+  .continue-btn {
+    display: block; text-align: center; text-decoration: none;
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: rgba(21,20,15,0.5);
+    padding: 10px; border: 1px solid rgba(21,20,15,0.15);
+  }
+
+  /* ────────────────────────────────────────────────── */
+  /* VIEW 3: CART DRAWER                                */
+  /* ────────────────────────────────────────────────── */
+  .cart-demo { display: flex; gap: 0; min-height: 80vh; }
+  .cart-backdrop { flex: 1; background: rgba(0,0,0,0.4); }
+  .cart-drawer {
+    width: 440px; background: #f4f1ec; border-left: 1px solid rgba(21,20,15,0.15);
+    display: flex; flex-direction: column;
+  }
+  .cart-header { padding: 28px 32px; border-bottom: 1px solid rgba(21,20,15,0.12); display: flex; justify-content: space-between; align-items: center; }
+  .cart-eyebrow { font-size: 10px; letter-spacing: 2.5px; color: rgba(21,20,15,0.55); }
+  .cart-title { font-family: 'Prata', serif; font-size: 26px; margin-top: 4px; }
+  .cart-close { font-size: 20px; cursor: pointer; background: none; border: none; color: #15140f; }
+  .cart-body { flex: 1; padding: 12px 32px; overflow: auto; }
+  .cart-item { display: grid; grid-template-columns: 80px 1fr; gap: 18px; padding: 20px 0; border-bottom: 1px solid rgba(21,20,15,0.1); align-items: start; }
+  .cart-thumb { height: 120px; background: #ede9e2; overflow: hidden; position: relative; }
+  .cart-thumb img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+  .cart-item-name { font-family: 'Prata', serif; font-size: 17px; margin-top: 2px; line-height: 1.2; }
+  .cart-item-size { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(21,20,15,0.55); margin-top: 4px; }
+  .custom-fit-tag { display: inline-block; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: #1f4a30; border: 1px solid #1f4a30; padding: 2px 6px; margin-left: 8px; }
+  .qty-row { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
+  .qty-ctrl { display: flex; align-items: center; border: 1px solid rgba(21,20,15,0.15); }
+  .qty-btn { width: 28px; height: 28px; background: transparent; border: none; cursor: pointer; font-size: 14px; }
+  .qty-val { width: 28px; text-align: center; font-size: 13px; }
+  .item-price { font-family: 'Prata', serif; font-size: 16px; }
+  .cart-footer { padding: 24px 32px; border-top: 1px solid rgba(21,20,15,0.12); }
+  .subtotal-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; }
+  .subtotal-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: rgba(21,20,15,0.55); }
+  .subtotal-val { font-family: 'Prata', serif; font-size: 22px; }
+  .checkout-btn { width: 100%; padding: 16px; background: #0d2818; color: #e8e4d8; border: none; font-family: 'Raleway', sans-serif; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: 600; cursor: pointer; }
+
+  @media (max-width: 900px) {
+    .zara-grid { grid-template-columns: repeat(2,1fr); }
+    .pdp { grid-template-columns: 1fr; }
+    .pdp-panel { position: static; height: auto; }
+    .collection-header { padding: 48px 18px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Wilourin</div>
+  <div class="nav-links">
+    <span>Collection</span>
+    <span>About</span>
+    <span>Account</span>
+    <span>Bag (2)</span>
+  </div>
+</nav>
+
+<!-- PAGE TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="show('home')">Homepage Grid</button>
+  <button class="tab" onclick="show('pdp')">Product Page</button>
+  <button class="tab" onclick="show('cart')">Cart Drawer</button>
+</div>
+
+<!-- ─── VIEW 1: HOMEPAGE ──────────────────────────────── -->
+<div id="view-home" class="view active">
+  <div class="collection-header">
+    <h2>The Collection</h2>
+    <span class="piece-count">6 pieces</span>
+  </div>
+
+  <div class="zara-grid">
+
+    <div class="card">
+      <img class="primary"   src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=800&q=80" />
+      <img class="secondary" src="https://images.unsplash.com/photo-1554412933-514a83d2f3cc?w=800&q=80" />
+      <div class="card-overlay">
+        <div class="overlay-text">
+          <div class="overlay-name">Oversized Blazer</div>
+          <div><span class="overlay-price">₹4,200</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-badge">New</div>
+      <img class="primary"   src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80" />
+      <img class="secondary" src="https://images.unsplash.com/photo-1502716119720-b23a93e5fe1b?w=800&q=80" />
+      <div class="card-overlay">
+        <div class="overlay-text">
+          <div class="overlay-name">Bias Mini</div>
+          <div><span class="overlay-price">₹2,800</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <img class="primary"   src="https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=800&q=80" />
+      <img class="secondary" src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800&q=80" />
+      <div class="card-overlay">
+        <div class="overlay-text">
+          <div class="overlay-name">Linen Column Dress</div>
+          <div><span class="overlay-price">₹5,600</span><span class="overlay-original">₹6,800</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <img class="primary"   src="https://images.unsplash.com/photo-1581044777550-4cfa60707c03?w=800&q=80" />
+      <img class="secondary" src="https://images.unsplash.com/photo-1525507119028-ed4c629a60a3?w=800&q=80" />
+      <div class="card-overlay">
+        <div class="overlay-text">
+          <div class="overlay-name">Silk Wrap Top</div>
+          <div><span class="overlay-price">₹3,400</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <img class="primary"   src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80" />
+      <img class="secondary" src="https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=800&q=80" />
+      <div class="card-overlay">
+        <div class="overlay-text">
+          <div class="overlay-name">Tailored Trouser</div>
+          <div><span class="overlay-price">₹3,800</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-badge">Last few</div>
+      <img class="primary"   src="https://images.unsplash.com/photo-1509631179647-0177331693ae?w=800&q=80" />
+      <img class="secondary" src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800&q=80" />
+      <div class="card-overlay">
+        <div class="overlay-text">
+          <div class="overlay-name">Open-Back Midi</div>
+          <div><span class="overlay-price">₹6,200</span><span class="overlay-original">₹7,400</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ─── VIEW 2: PRODUCT PAGE ──────────────────────────── -->
+<div id="view-pdp" class="view">
+  <div class="pdp">
+    <div class="pdp-images">
+      <a class="back-link" href="#">← Back</a>
+      <div class="pdp-img">
+        <img src="https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=1200&q=85" />
+      </div>
+      <div class="pdp-img">
+        <img src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1200&q=85" />
+      </div>
+      <div class="pdp-img">
+        <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=1200&q=85" />
+      </div>
+    </div>
+
+    <div class="pdp-panel">
+      <span class="pdp-badge">New Arrival</span>
+      <h1 class="pdp-name">Linen Column Dress</h1>
+      <div>
+        <span class="pdp-price">₹5,600</span>
+        <span class="pdp-original">₹6,800</span>
+      </div>
+      <p class="pdp-desc">A structured column silhouette cut from washed linen. Relaxed fit with a slight drape — wears equally well in the heat as it does in air-conditioning.</p>
+
+      <div class="divider"></div>
+
+      <div class="size-header">
+        <span class="size-label">Select Size</span>
+        <button class="size-guide">Size guide</button>
+      </div>
+      <div class="size-grid">
+        <button class="size-btn soldout">XS</button>
+        <button class="size-btn">S</button>
+        <button class="size-btn active">M</button>
+        <button class="size-btn">L</button>
+        <button class="size-btn">XL</button>
+        <button class="size-btn soldout">XXL</button>
+      </div>
+
+      <div class="fit-section">
+        <button class="fit-toggle" onclick="toggleFit()">
+          <span>Personalized Fit</span>
+          <span id="fit-icon">+</span>
+        </button>
+        <div id="fit-body" class="fit-body" style="display:none">
+          <p style="font-size:12px;color:rgba(21,20,15,0.5);margin-bottom:18px;line-height:1.65">Adjust centimetres from your standard size. We tailor each piece accordingly.</p>
+
+          <div class="fit-row">
+            <div class="fit-row-header">
+              <span>Chest</span>
+              <span class="fit-val" id="chest-val">Standard</span>
+            </div>
+            <div class="slider-wrap"><div class="slider-track"></div><input type="range" min="-6" max="6" step="0.5" value="0" oninput="updateFit('chest-val', this.value, 'cm')" /></div>
+          </div>
+          <div class="fit-row">
+            <div class="fit-row-header">
+              <span>Waist</span>
+              <span class="fit-val" id="waist-val">Standard</span>
+            </div>
+            <div class="slider-wrap"><div class="slider-track"></div><input type="range" min="-6" max="6" step="0.5" value="0" oninput="updateFit('waist-val', this.value, 'cm')" /></div>
+          </div>
+          <div class="fit-row">
+            <div class="fit-row-header">
+              <span>Hips</span>
+              <span class="fit-val" id="hips-val">Standard</span>
+            </div>
+            <div class="slider-wrap"><div class="slider-track"></div><input type="range" min="-6" max="6" step="0.5" value="0" oninput="updateFit('hips-val', this.value, 'cm')" /></div>
+          </div>
+          <div class="fit-row">
+            <div class="fit-row-header">
+              <span>Length</span>
+              <span class="fit-val" id="length-val">Standard</span>
+            </div>
+            <div class="slider-wrap"><div class="slider-track"></div><input type="range" min="-4" max="4" step="0.5" value="0" oninput="updateFit('length-val', this.value, 'cm')" /></div>
+          </div>
+        </div>
+      </div>
+
+      <button class="add-btn" id="add-btn" onclick="addToBag()">Add to Bag</button>
+      <a class="continue-btn" href="#">Continue Shopping</a>
+    </div>
+  </div>
+</div>
+
+<!-- ─── VIEW 3: CART DRAWER ───────────────────────────── -->
+<div id="view-cart" class="view">
+  <div class="cart-demo">
+    <div class="cart-backdrop"></div>
+    <div class="cart-drawer">
+      <div class="cart-header">
+        <div>
+          <div class="cart-eyebrow">YOUR BAG · 02</div>
+          <div class="cart-title">Holding</div>
+        </div>
+        <button class="cart-close">✕</button>
+      </div>
+      <div class="cart-body">
+
+        <div class="cart-item">
+          <div class="cart-thumb"><img src="https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=400&q=80" /></div>
+          <div>
+            <div class="cart-item-name">Linen Column Dress</div>
+            <div class="cart-item-size">Size M <span class="custom-fit-tag">Custom Fit</span></div>
+            <div class="qty-row">
+              <div class="qty-ctrl">
+                <button class="qty-btn">−</button>
+                <span class="qty-val">1</span>
+                <button class="qty-btn">+</button>
+              </div>
+              <span class="item-price">₹5,600</span>
+            </div>
+            <div style="margin-top:8px"><span style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(21,20,15,0.5);text-decoration:underline;cursor:pointer">Remove</span></div>
+          </div>
+        </div>
+
+        <div class="cart-item">
+          <div class="cart-thumb"><img src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=400&q=80" /></div>
+          <div>
+            <div class="cart-item-name">Oversized Blazer</div>
+            <div class="cart-item-size">Size S</div>
+            <div class="qty-row">
+              <div class="qty-ctrl">
+                <button class="qty-btn">−</button>
+                <span class="qty-val">2</span>
+                <button class="qty-btn">+</button>
+              </div>
+              <span class="item-price">₹8,400</span>
+            </div>
+            <div style="margin-top:8px"><span style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(21,20,15,0.5);text-decoration:underline;cursor:pointer">Remove</span></div>
+          </div>
+        </div>
+
+      </div>
+      <div class="cart-footer">
+        <div class="subtotal-row">
+          <span class="subtotal-label">Subtotal</span>
+          <span class="subtotal-val">₹14,000</span>
+        </div>
+        <p style="font-size:11px;color:rgba(21,20,15,0.5);margin-bottom:16px;line-height:1.5">Shipping calculated at checkout.</p>
+        <button class="checkout-btn">Proceed to Checkout →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function show(page) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'))
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+    document.getElementById('view-' + page).classList.add('active')
+    event.target.classList.add('active')
+  }
+
+  function toggleFit() {
+    const body = document.getElementById('fit-body')
+    const icon = document.getElementById('fit-icon')
+    const open = body.style.display === 'block'
+    body.style.display = open ? 'none' : 'block'
+    icon.textContent = open ? '+' : '−'
+  }
+
+  function updateFit(id, val, unit) {
+    const el = document.getElementById(id)
+    const v = parseFloat(val)
+    if (v === 0) { el.textContent = 'Standard'; el.classList.remove('adjusted') }
+    else { el.textContent = (v > 0 ? '+' : '') + v + ' ' + unit; el.classList.add('adjusted') }
+  }
+
+  function addToBag() {
+    const btn = document.getElementById('add-btn')
+    btn.textContent = '✓ Added to Bag'
+    btn.classList.add('added')
+    setTimeout(() => { btn.textContent = 'Add to Bag'; btn.classList.remove('added') }, 2500)
+  }
+</script>
+</body>
+</html>
