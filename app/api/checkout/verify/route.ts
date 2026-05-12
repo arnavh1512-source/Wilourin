@@ -5,7 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 export async function POST(req: NextRequest) {
   const { orderId, razorpay_order_id, razorpay_payment_id, razorpay_signature } = await req.json()
 
-  // Verify Razorpay signature
+  // Verify Razorpay payment signature
   const expected = crypto
     .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
     .update(`${razorpay_order_id}|${razorpay_payment_id}`)
@@ -17,29 +17,29 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient()
 
-  // Mark order confirmed
+  // Replay protection — if already confirmed, stock was already decremented
+  const { data: existingOrder } = await admin.from('orders').select('status').eq('id', orderId).single()
+  if (existingOrder?.status === 'confirmed') {
+    return NextResponse.json({ success: true })
+  }
+
   await admin.from('orders').update({
     status: 'confirmed',
     razorpay_payment_id,
   }).eq('id', orderId)
 
-  // Decrement stock for each variant ordered
+  // Atomically decrement stock via DB function (no race condition)
   const { data: orderItems } = await admin
     .from('order_items')
     .select('variant_id, quantity')
     .eq('order_id', orderId)
 
   for (const item of orderItems ?? []) {
-    if (!item.variant_id) continue
-    const { data: variant } = await admin
-      .from('product_variants')
-      .select('stock_qty')
-      .eq('id', item.variant_id)
-      .single()
-    if (variant) {
-      await admin.from('product_variants').update({
-        stock_qty: Math.max(0, variant.stock_qty - item.quantity),
-      }).eq('id', item.variant_id)
+    if (item.variant_id) {
+      await admin.rpc('decrement_stock', {
+        p_variant_id: item.variant_id,
+        p_qty: item.quantity,
+      })
     }
   }
 

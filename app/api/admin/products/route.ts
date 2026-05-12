@@ -11,7 +11,17 @@ async function requireAdmin() {
 }
 
 function toSlug(name: string) {
-  return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '-' + Date.now().toString(36)
+  return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+}
+
+async function uniqueSlug(base: string, admin: ReturnType<typeof createAdmin>): Promise<string> {
+  let slug = base
+  let n = 2
+  while (true) {
+    const { data } = await admin.from('products').select('id').eq('slug', slug).maybeSingle()
+    if (!data) return slug
+    slug = `${base}-${n++}`
+  }
 }
 
 export async function GET() {
@@ -38,9 +48,10 @@ export async function POST(req: NextRequest) {
   if (!name || !price) return NextResponse.json({ error: 'name and price are required' }, { status: 400 })
 
   const admin = createAdmin()
+  const slug = await uniqueSlug(toSlug(name), admin)
   const { data: product, error } = await admin
     .from('products')
-    .insert({ name, slug: toSlug(name), description, price, original_price: original_price || null, category: category || null, is_published: !!is_published })
+    .insert({ name, slug, description, price, original_price: original_price || null, category: category || null, is_published: !!is_published })
     .select()
     .single()
 
