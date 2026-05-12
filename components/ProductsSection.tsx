@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCartStore } from '@/lib/store'
+import { useWishlistStore } from '@/lib/wishlistStore'
 
 const C = {
   marbleBase:     '#f4f1ec',
@@ -15,7 +16,6 @@ const C = {
 }
 
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
-const FILTERS = ['ALL', 'NEW', 'DRESSES', 'TOPS', 'BLAZERS', 'TROUSERS', 'KNITWEAR', 'CO-ORD SETS']
 
 const FALLBACK = [
   { id: 'f1', name: 'Oversized Blazer', slug: null, price: 4200, original_price: null, badge: null, category: 'BLAZERS', product_images: [{ url: '/productBlazer.png', is_primary: true, display_order: 0 }], product_variants: [] },
@@ -34,7 +34,9 @@ function ProductCard({ p }: { p: Product }) {
   const [hover, setHover]       = useState(false)
   const [sizeOpen, setSizeOpen] = useState(false)
   const [added, setAdded]       = useState(false)
-  const add = useCartStore(s => s.add)
+  const add     = useCartStore(s => s.add)
+  const toggle  = useWishlistStore(s => s.toggle)
+  const isLiked = useWishlistStore(s => s.has(p.id))
 
   const sorted = [...(p.product_images ?? [])].sort((a, b) => a.display_order - b.display_order)
   const img1 = sorted[0]?.url ?? '/productBlazer.png'
@@ -81,7 +83,15 @@ function ProductCard({ p }: { p: Product }) {
             style={{ objectFit: 'cover', objectPosition: 'top center', opacity: hover ? 1 : 0, transition: 'opacity 0.45s ease' }} />
         )}
         <div style={{ position: 'absolute', top: 10, left: 10, width: 12, height: 12, borderTop: '1px solid rgba(232,228,216,0.6)', borderLeft: '1px solid rgba(232,228,216,0.6)' }} />
-        <div style={{ position: 'absolute', top: 10, right: 10, width: 12, height: 12, borderTop: '1px solid rgba(232,228,216,0.6)', borderRight: '1px solid rgba(232,228,216,0.6)' }} />
+        <button
+          onClick={e => { e.preventDefault(); e.stopPropagation(); toggle({ id: p.id, name: p.name, price: p.price, img: img1, slug: p.slug }) }}
+          style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(244,241,236,0.85)', border: 'none', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backdropFilter: 'blur(4px)' }}
+          aria-label={isLiked ? 'Remove from saved' : 'Save'}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill={isLiked ? '#0d2818' : 'none'} stroke="#0d2818" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 20.5s-7.5-4.5-9.4-9.2C1.2 7.6 4 4 7.5 4c2 0 3.5 1.2 4.5 2.8C13 5.2 14.5 4 16.5 4 20 4 22.8 7.6 21.4 11.3 19.5 16 12 20.5 12 20.5z"/>
+          </svg>
+        </button>
         {p.badge && (
           <div style={{ position: 'absolute', bottom: 14, left: 14, background: C.forestDark, color: C.cream, padding: '4px 10px', fontFamily: "'Raleway',sans-serif", fontSize: 9, letterSpacing: 2, textTransform: 'uppercase' }}>{p.badge}</div>
         )}
@@ -126,34 +136,19 @@ function ProductCard({ p }: { p: Product }) {
 }
 
 export function ProductsSection({ products }: { products: Product[] }) {
-  const [activeFilter, setActiveFilter] = useState('ALL')
   const all = products.length > 0 ? products : FALLBACK
-
-  const filtered = activeFilter === 'ALL' ? all : all.filter(p =>
-    p.category?.toUpperCase() === activeFilter || p.badge?.toUpperCase() === activeFilter
-  )
 
   return (
     <section id="collection" className="products-section" style={{ backgroundColor: C.marbleBase, padding: '100px 40px 120px', position: 'relative' }}>
-      <div style={{ borderBottom: `1px solid ${C.marbleLine}`, paddingBottom: 28, marginBottom: 32 }} className="section-head">
+      <div style={{ borderBottom: `1px solid ${C.marbleLine}`, paddingBottom: 28, marginBottom: 48 }} className="section-head">
         <h2 style={{ fontFamily: "'Prata',serif", fontSize: 'clamp(44px,6vw,80px)', lineHeight: 0.95, margin: 0, fontWeight: 400, color: C.marbleInk, letterSpacing: '-0.015em' }}>
           The Collection
         </h2>
       </div>
 
-      {/* Filter pills */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 48 }}>
-        {FILTERS.map(f => (
-          <button key={f} onClick={() => setActiveFilter(f)}
-            style={{ padding: '7px 16px', border: `1px solid ${activeFilter === f ? C.marbleInk : C.marbleLine}`, background: activeFilter === f ? C.marbleInk : 'transparent', color: activeFilter === f ? C.cream : C.marbleInk, fontFamily: "'Raleway',sans-serif", fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', cursor: 'pointer', transition: 'all 0.15s' }}>
-            {f}
-          </button>
-        ))}
-      </div>
-
       <div className="products-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 40 }}>
-        {filtered.length > 0
-          ? filtered.map(p => <ProductCard key={p.id} p={p} />)
+        {all.length > 0
+          ? all.map(p => <ProductCard key={p.id} p={p} />)
           : <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '60px 0', fontFamily: "'Prata',serif", fontSize: 18, color: C.marbleInkFaint, fontStyle: 'italic' }}>No items in this category yet.</div>
         }
       </div>

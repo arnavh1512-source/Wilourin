@@ -11,7 +11,7 @@ export function Logo({ height = 40 }: LogoProps) {
       alt="WILOURIN"
       height={height}
       width={height * 4}
-      style={{ objectFit: 'contain', width: 'auto', display: 'block' }}
+      style={{ objectFit: 'contain', width: 'auto', display: 'block', margin: '0 auto' }}
       priority
     />
   )

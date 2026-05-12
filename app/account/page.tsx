@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { AccountClient } from './AccountClient'
 
@@ -15,5 +16,9 @@ export default async function AccountPage() {
       .order('created_at', { ascending: false }),
   ])
 
-  return <AccountClient user={user} profile={profile} orders={orders ?? []} />
+  return (
+    <Suspense fallback={null}>
+      <AccountClient user={user} profile={profile} orders={orders ?? []} />
+    </Suspense>
+  )
 }

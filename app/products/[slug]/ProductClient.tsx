@@ -37,7 +37,7 @@ export function ProductClient({ product }: { product: Product }) {
 
   const [activeImg, setActiveImg] = useState(0)
   const [selectedSize, setSelectedSize] = useState('')
-  const [fitOpen, setFitOpen] = useState(false)
+  const [fitOpen, setFitOpen] = useState(true)
   const [fit, setFit] = useState<Record<string, number>>(() => Object.fromEntries(FIT_MEASURES.map(m => [m.key, 0])))
   const [added, setAdded] = useState(false)
   const [error, setError] = useState('')

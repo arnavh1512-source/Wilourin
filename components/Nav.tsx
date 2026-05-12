@@ -2,14 +2,16 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Logo } from './Logo'
 import { useCartStore } from '@/lib/store'
+import { useWishlistStore } from '@/lib/wishlistStore'
+import { createClient } from '@/lib/supabase/client'
 
-const IC = '#115511'
 const btn: React.CSSProperties = {
   background: 'transparent', border: 'none', cursor: 'pointer',
   padding: 6, display: 'inline-flex', alignItems: 'center',
-  justifyContent: 'center', color: IC, position: 'relative',
+  justifyContent: 'center', color: '#115511', position: 'relative',
 }
 
 const IconSearch = () => (
@@ -34,8 +36,12 @@ const IconBag = () => (
 )
 
 export function Nav() {
-  const [scrolled, setScrolled] = useState(false)
+  const [scrolled, setScrolled]       = useState(false)
+  const [searchOpen, setSearchOpen]   = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
   const { toggle, items } = useCartStore()
+  const wishlistCount = useWishlistStore(s => s.items.length)
+  const router = useRouter()
   const cartCount = items.length
 
   useEffect(() => {
@@ -44,54 +50,74 @@ export function Nav() {
     return () => window.removeEventListener('scroll', s)
   }, [])
 
+  const handleUser = async () => {
+    const supabase = createClient()
+    const { data: { session } } = await supabase.auth.getSession()
+    router.push(session ? '/account' : '/login')
+  }
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!searchQuery.trim()) return
+    setSearchOpen(false)
+    router.push(`/?search=${encodeURIComponent(searchQuery.trim())}`)
+    setSearchQuery('')
+  }
+
   return (
-    <nav style={{
-      position: 'sticky', top: 0, zIndex: 100,
-      background: scrolled ? 'rgba(244,241,236,0.92)' : 'rgba(244,241,236,0.7)',
-      backdropFilter: 'blur(18px)',
-      WebkitBackdropFilter: 'blur(18px)',
-      borderBottom: '1px solid rgba(21,20,15,0.22)',
-      transition: 'background 0.3s',
-    }}>
-      <div style={{
-        display: 'grid', gridTemplateColumns: '1fr auto 1fr',
-        alignItems: 'center', padding: '16px 32px',
+    <>
+      <nav style={{
+        position: 'sticky', top: 0, zIndex: 100,
+        background: scrolled ? 'rgba(244,241,236,0.92)' : 'rgba(244,241,236,0.7)',
+        backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)',
+        borderBottom: '1px solid rgba(21,20,15,0.22)', transition: 'background 0.3s',
       }}>
-        {/* Left */}
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <button style={btn} aria-label="Search"><IconSearch /></button>
-          <button style={btn} aria-label="Account"><IconUser /></button>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', padding: '16px 32px' }}>
+          {/* Left */}
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <button onClick={() => setSearchOpen(o => !o)} style={btn} aria-label="Search"><IconSearch /></button>
+            <button onClick={handleUser} style={btn} aria-label="Account"><IconUser /></button>
+          </div>
+
+          {/* Center — Logo */}
+          <Link href="/" style={{ display: 'flex', justifyContent: 'center' }}>
+            <Logo height={50} />
+          </Link>
+
+          {/* Right */}
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', alignItems: 'center' }}>
+            <Link href="/account?tab=saved" style={{ ...btn, textDecoration: 'none', position: 'relative' }} aria-label="Wishlist">
+              <IconHeart />
+              {wishlistCount > 0 && (
+                <span style={{ position: 'absolute', top: 0, right: -2, background: '#1f4a30', color: '#e8e4d8', padding: '1px 5px', fontSize: 8, borderRadius: 999, fontWeight: 700, fontFamily: "'Raleway',sans-serif", lineHeight: '14px', minWidth: 14, textAlign: 'center' }}>{wishlistCount}</span>
+              )}
+            </Link>
+            <button onClick={toggle} style={btn} aria-label="Cart">
+              <IconBag />
+              {cartCount > 0 && (
+                <span style={{ position: 'absolute', top: 0, right: -2, background: '#1f4a30', color: '#e8e4d8', padding: '1px 5px', fontSize: 8, borderRadius: 999, fontWeight: 700, fontFamily: "'Raleway',sans-serif", lineHeight: '14px', minWidth: 14, textAlign: 'center' }}>{cartCount}</span>
+              )}
+            </button>
+          </div>
         </div>
 
-        {/* Center — Logo */}
-        <Link href="/" style={{ display: 'flex', justifyContent: 'center' }}>
-          <Logo height={50} />
-        </Link>
+        {/* Search bar — slides down */}
+        {searchOpen && (
+          <form onSubmit={handleSearch} style={{ borderTop: '1px solid rgba(21,20,15,0.12)', padding: '12px 32px', display: 'flex', gap: 12, alignItems: 'center' }}>
+            <input
+              autoFocus
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search products…"
+              style={{ flex: 1, padding: '10px 0', background: 'transparent', border: 'none', borderBottom: '1px solid rgba(21,20,15,0.3)', fontFamily: "'Raleway',sans-serif", fontSize: 13, color: '#15140f', outline: 'none' }}
+            />
+            <button type="submit" style={{ ...btn, fontFamily: "'Raleway',sans-serif", fontSize: 9, letterSpacing: 2, textTransform: 'uppercase' }}>Go</button>
+            <button type="button" onClick={() => setSearchOpen(false)} style={{ ...btn, fontSize: 16 }}>✕</button>
+          </form>
+        )}
 
-        {/* Right */}
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', alignItems: 'center' }}>
-          <button style={btn} aria-label="Wishlist"><IconHeart /></button>
-          <button onClick={toggle} style={btn} aria-label="Cart">
-            <IconBag />
-            {cartCount > 0 && (
-              <span style={{
-                position: 'absolute', top: 0, right: -2,
-                background: '#1f4a30', color: '#e8e4d8',
-                padding: '1px 5px', fontSize: 8, borderRadius: 999,
-                fontWeight: 700, fontFamily: "'Raleway',sans-serif",
-                lineHeight: '14px', minWidth: 14, textAlign: 'center',
-              }}>{cartCount}</span>
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile nav tweaks */}
-      <style>{`
-        @media (max-width: 700px) {
-          nav > div { padding: 12px 16px !important; }
-        }
-      `}</style>
-    </nav>
+        <style>{`@media (max-width: 700px) { nav > div:first-child { padding: 12px 16px !important; } }`}</style>
+      </nav>
+    </>
   )
 }

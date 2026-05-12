@@ -66,8 +66,13 @@ export async function PATCH(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await req.json()
-  const { id, variants, images, ...productFields } = body
+  const { id, variants, images, ...rawFields } = body
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
+
+  // Convert empty strings to null so they don't overwrite existing DB values with ''
+  const productFields = Object.fromEntries(
+    Object.entries(rawFields).map(([k, v]) => [k, v === '' ? null : v])
+  )
 
   const admin = createAdmin()
   const { data, error } = await admin.from('products').update(productFields).eq('id', id).select().single()

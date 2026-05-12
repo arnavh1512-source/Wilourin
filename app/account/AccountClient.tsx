@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
 import { Logo } from '@/components/Logo'
+import { useWishlistStore, type WishlistItem } from '@/lib/wishlistStore'
 
 const C = {
   marbleBase:  '#f4f1ec',
@@ -52,12 +53,20 @@ interface Props {
 }
 
 export function AccountClient({ user, profile, orders }: Props) {
-  const [tab, setTab] = useState<'orders' | 'profile'>('orders')
+  const searchParams = useSearchParams()
+  const initialTab = (searchParams.get('tab') as 'orders' | 'saved' | 'profile') ?? 'orders'
+  const [tab, setTab] = useState<'orders' | 'saved' | 'profile'>(initialTab)
   const [name, setName]  = useState(profile?.full_name ?? '')
   const [phone, setPhone] = useState(profile?.phone ?? '')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved]   = useState(false)
+  const [wishlist, setWishlist] = useState<WishlistItem[]>([])
+  const wishlistStore = useWishlistStore()
   const router = useRouter()
+
+  useEffect(() => {
+    setWishlist(wishlistStore.items)
+  }, [wishlistStore.items])
 
   const signOut = async () => {
     await createClient().auth.signOut()
@@ -73,7 +82,7 @@ export function AccountClient({ user, profile, orders }: Props) {
     setTimeout(() => setSaved(false), 2000)
   }
 
-  const tabBtn = (t: 'orders' | 'profile', label: string) => (
+  const tabBtn = (t: 'orders' | 'saved' | 'profile', label: string) => (
     <button
       onClick={() => setTab(t)}
       style={{
@@ -89,11 +98,14 @@ export function AccountClient({ user, profile, orders }: Props) {
   return (
     <div style={{ minHeight: '100vh', background: C.marbleBase }}>
       {/* Header */}
-      <div style={{ borderBottom: `1px solid ${C.marbleLine}`, padding: '24px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <a href="/" style={{ display: 'block' }}><Logo height={40} /></a>
-        <button onClick={signOut} style={{ background: 'transparent', border: `1px solid ${C.marbleLine}`, padding: '8px 20px', fontFamily: "'Raleway',sans-serif", fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', cursor: 'pointer', color: C.inkFaint }}>
-          Sign out
-        </button>
+      <div style={{ borderBottom: `1px solid ${C.marbleLine}`, padding: '20px 40px', display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center' }}>
+        <div />
+        <a href="/" style={{ display: 'flex', justifyContent: 'center' }}><Logo height={40} /></a>
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <button onClick={signOut} style={{ background: 'transparent', border: `1px solid ${C.marbleLine}`, padding: '8px 20px', fontFamily: "'Raleway',sans-serif", fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', cursor: 'pointer', color: C.inkFaint }}>
+            Sign out
+          </button>
+        </div>
       </div>
 
       <div style={{ maxWidth: 800, margin: '0 auto', padding: '48px 24px' }}>
@@ -108,6 +120,7 @@ export function AccountClient({ user, profile, orders }: Props) {
         {/* Tabs */}
         <div style={{ borderBottom: `1px solid ${C.marbleLine}`, marginTop: 32, marginBottom: 40 }}>
           {tabBtn('orders', 'Orders')}
+          {tabBtn('saved', `Saved${wishlist.length > 0 ? ` (${wishlist.length})` : ''}`)}
           {tabBtn('profile', 'Profile')}
         </div>
 
@@ -149,6 +162,44 @@ export function AccountClient({ user, profile, orders }: Props) {
                         </div>
                       ))}
                     </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Saved Tab */}
+        {tab === 'saved' && (
+          <div>
+            {wishlist.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px 0' }}>
+                <p style={{ fontFamily: "'Prata',serif", fontSize: 22, color: C.inkFaint, fontStyle: 'italic' }}>Nothing saved yet.</p>
+                <a href="/" style={{ display: 'inline-block', marginTop: 20, fontFamily: "'Raleway',sans-serif", fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', color: C.marbleInk, textDecoration: 'underline' }}>Explore the collection</a>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 24 }}>
+                {wishlist.map((item) => (
+                  <div key={item.id} style={{ position: 'relative' }}>
+                    <a href={item.slug ? `/products/${item.slug}` : '/'} style={{ textDecoration: 'none', display: 'block' }}>
+                      <div style={{ aspectRatio: '2/3', background: '#fafaf7', border: `1px solid ${C.marbleLine}`, overflow: 'hidden', position: 'relative' }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={item.img} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }} />
+                      </div>
+                      <div style={{ paddingTop: 12 }}>
+                        <div style={{ fontFamily: "'Prata',serif", fontSize: 16, color: C.marbleInk, lineHeight: 1.2 }}>{item.name}</div>
+                        <div style={{ fontFamily: "'Prata',serif", fontSize: 14, color: C.marbleInk, marginTop: 4 }}>₹{Number(item.price).toLocaleString('en-IN')}</div>
+                      </div>
+                    </a>
+                    <button
+                      onClick={() => wishlistStore.toggle(item)}
+                      style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(244,241,236,0.9)', border: 'none', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                      aria-label="Remove from saved"
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="#0d2818" stroke="#0d2818" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 20.5s-7.5-4.5-9.4-9.2C1.2 7.6 4 4 7.5 4c2 0 3.5 1.2 4.5 2.8C13 5.2 14.5 4 16.5 4 20 4 22.8 7.6 21.4 11.3 19.5 16 12 20.5 12 20.5z"/>
+                      </svg>
+                    </button>
                   </div>
                 ))}
               </div>

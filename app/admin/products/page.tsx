@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 interface Variant { size: string; stock_qty: number }
 interface Product {
   id: string; name: string; slug: string; price: number
-  original_price?: number; category?: string; is_published: boolean
+  description?: string; original_price?: number; category?: string; is_published: boolean
   created_at: string
   product_images?: Array<{ url: string }>
   product_variants?: Variant[]
@@ -47,7 +47,7 @@ export default function AdminProducts() {
   const openEdit = (p: Product) => {
     setEditing(p)
     setForm({
-      name: p.name, description: '',
+      name: p.name, description: p.description ?? '',
       price: String(p.price),
       original_price: String(p.original_price ?? ''),
       category: p.category ?? '',
