@@ -41,8 +41,10 @@ export default function CheckoutPage() {
 
   const handlePay = async () => {
     const { name, phone, address, city, state, pincode } = shipping
-    if (!name || !phone || !address || !city || !state || !pincode) { setError('Please fill all fields'); return }
-    if (items.length === 0) { setError('Your cart is empty'); return }
+    if (!name || !phone || !address || !city || !state || !pincode) { setError('Please fill all fields.'); return }
+    if (!/^[6-9]\d{9}$/.test(phone)) { setError('Enter a valid 10-digit Indian mobile number.'); return }
+    if (!/^\d{6}$/.test(pincode)) { setError('Enter a valid 6-digit pincode.'); return }
+    if (items.length === 0) { setError('Your cart is empty.'); return }
 
     setPaying(true); setError('')
     const supabase = createClient()

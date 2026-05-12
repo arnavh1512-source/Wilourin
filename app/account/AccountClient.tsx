@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
 import { Logo } from '@/components/Logo'
+import NextImage from 'next/image'
 import { useWishlistStore, type WishlistItem } from '@/lib/wishlistStore'
 
 const C = {
@@ -183,8 +184,7 @@ export function AccountClient({ user, profile, orders }: Props) {
                   <div key={item.id} style={{ position: 'relative' }}>
                     <a href={item.slug ? `/products/${item.slug}` : '/'} style={{ textDecoration: 'none', display: 'block' }}>
                       <div style={{ aspectRatio: '2/3', background: '#fafaf7', border: `1px solid ${C.marbleLine}`, overflow: 'hidden', position: 'relative' }}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={item.img} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }} />
+                        <NextImage src={item.img} alt={item.name} fill style={{ objectFit: 'cover', objectPosition: 'top' }} sizes="200px" />
                       </div>
                       <div style={{ paddingTop: 12 }}>
                         <div style={{ fontFamily: "'Prata',serif", fontSize: 16, color: C.marbleInk, lineHeight: 1.2 }}>{item.name}</div>
