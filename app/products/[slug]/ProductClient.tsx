@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useCartStore } from '@/lib/store'
 
 const C = {
@@ -66,6 +67,7 @@ export function ProductClient({ product }: { product: Product }) {
   }
 
   const F = { fontFamily: "'Raleway',sans-serif" }
+  const fmt = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' })
   const sizeAvailable = (size: string) => {
     const v = variants.find(x => x.size === size)
     return !v || v.stock_qty > 0
@@ -75,7 +77,7 @@ export function ProductClient({ product }: { product: Product }) {
     <div style={{ minHeight: '100vh', background: C.marbleBase }}>
       {/* Back nav + image counter */}
       <div style={{ padding: '20px 40px', borderBottom: `1px solid ${C.marbleLine}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <a href="/#collection" style={{ ...F, fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: C.inkFaint, textDecoration: 'none' }}>← The Collection</a>
+        <Link href="/#collection" style={{ ...F, fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: C.inkFaint, textDecoration: 'none' }}>← The Collection</Link>
         {images.length > 1 && (
           <span style={{ ...F, fontSize: 10, letterSpacing: 2, color: C.inkFaint }}>{activeImg + 1} / {images.length}</span>
         )}
@@ -106,9 +108,9 @@ export function ProductClient({ product }: { product: Product }) {
           <h1 style={{ fontFamily: "'Prata',serif", fontSize: 'clamp(32px,4vw,48px)', color: C.marbleInk, fontWeight: 400, lineHeight: 1.1, margin: '0 0 16px' }}>{product.name}</h1>
 
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 24 }}>
-            <span style={{ fontFamily: "'Prata',serif", fontSize: 28, color: C.marbleInk }}>₹{Number(product.price).toLocaleString('en-IN')}</span>
+            <span style={{ fontFamily: "'Prata',serif", fontSize: 28, color: C.marbleInk }}>{fmt.format(product.price)}</span>
             {product.original_price && (
-              <span style={{ ...F, fontSize: 16, color: C.inkFaint, textDecoration: 'line-through' }}>₹{Number(product.original_price).toLocaleString('en-IN')}</span>
+              <span style={{ ...F, fontSize: 16, color: C.inkFaint, textDecoration: 'line-through' }}>{fmt.format(product.original_price)}</span>
             )}
           </div>
 
