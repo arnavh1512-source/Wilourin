@@ -1,13 +1,13 @@
-const map = new Map<string, { count: number; reset: number }>()
+import { Redis } from '@upstash/redis'
 
-export function rateLimit(key: string, limit = 10, windowMs = 60_000): boolean {
-  const now = Date.now()
-  const entry = map.get(key)
-  if (!entry || now > entry.reset) {
-    map.set(key, { count: 1, reset: now + windowMs })
-    return true
-  }
-  if (entry.count >= limit) return false
-  entry.count++
-  return true
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+})
+
+export async function rateLimit(key: string, limit = 10, windowMs = 60_000): Promise<boolean> {
+  const windowKey = `${key}:${Math.floor(Date.now() / windowMs)}`
+  const current = await redis.incr(windowKey)
+  if (current === 1) await redis.expire(windowKey, Math.ceil(windowMs / 1000))
+  return current <= limit
 }
