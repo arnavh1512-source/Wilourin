@@ -8,18 +8,21 @@ import { CartDrawer } from '@/components/CartDrawer'
 
 export default async function HomePage() {
   const supabase = await createClient()
-  const { data: products } = await supabase
-    .from('products')
-    .select('id, name, slug, price, original_price, badge, product_images(url, is_primary, display_order)')
-    .eq('is_published', true)
-    .order('created_at', { ascending: false })
-    .limit(6)
+  const [{ data: products }, { data: settings }] = await Promise.all([
+    supabase
+      .from('products')
+      .select('id, name, slug, price, original_price, badge, product_images(url, is_primary, display_order)')
+      .eq('is_published', true)
+      .order('created_at', { ascending: false })
+      .limit(6),
+    supabase.from('site_settings').select('hero_video_url').eq('id', 1).single(),
+  ])
 
   return (
     <>
       <Nav />
       <main>
-        <Hero />
+        <Hero videoUrl={settings?.hero_video_url} />
         <ProductsSection products={products ?? []} />
         <Philosophy />
         <Footer />
