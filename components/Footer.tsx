@@ -43,16 +43,16 @@ function FooterCol({ title, items }: { title: string; items: { label: string; hr
 }
 
 const STUDIO = [
-  { label: 'About',           href: '#' },
+  { label: 'About',           href: '/about' },
   { label: 'Provenance',      href: '#' },
   { label: 'Mending service', href: '#' },
   { label: 'Stockists',       href: '#' },
-  { label: 'Press',           href: '#' },
+  { label: 'Press',           href: 'mailto:press@wilourin.com' },
 ]
 const HELP = [
-  { label: 'Contact',    href: '#' },
-  { label: 'Shipping',   href: '#' },
-  { label: 'Returns',    href: '#' },
+  { label: 'Contact',    href: 'mailto:hello@wilourin.com' },
+  { label: 'Shipping',   href: '/shipping' },
+  { label: 'Returns',    href: '/returns' },
   { label: 'Size guide', href: '#' },
   { label: 'FAQ',        href: '#' },
 ]
@@ -114,7 +114,7 @@ export function Footer() {
             <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram" style={{ color: C.creamFaint }}>
               <InstagramIcon />
             </a>
-            <a href="https://wa.me/918140081461" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" style={{ color: C.creamFaint }}>
+            <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '918140081461'}`} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" style={{ color: C.creamFaint }}>
               <WhatsAppIcon />
             </a>
           </div>
