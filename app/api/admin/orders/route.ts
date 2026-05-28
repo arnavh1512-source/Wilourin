@@ -40,12 +40,17 @@ export async function PATCH(req: NextRequest) {
   const user = await requireAdmin()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { id, status } = await req.json()
-  if (!id || !status) return NextResponse.json({ error: 'id and status required' }, { status: 400 })
-  if (!VALID_STATUSES.includes(status)) return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
+  const { id, status, tracking_number } = await req.json()
+  if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
+  if (!status && tracking_number === undefined) return NextResponse.json({ error: 'status or tracking_number required' }, { status: 400 })
+  if (status && !VALID_STATUSES.includes(status)) return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
+
+  const update: Record<string, unknown> = {}
+  if (status) update.status = status
+  if (tracking_number !== undefined) update.tracking_number = tracking_number
 
   const admin = createAdmin()
-  const { data, error } = await admin.from('orders').update({ status }).eq('id', id).select().single()
+  const { data, error } = await admin.from('orders').update(update).eq('id', id).select().single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ data })
 }

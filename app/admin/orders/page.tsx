@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
 interface OrderItem { product_name: string; size: string; quantity: number; price: number }
@@ -79,23 +80,25 @@ export default function AdminOrders() {
           {orders.map(o => (
             <div key={o.id}>
               <div
-                onClick={() => setExpanded(expanded === o.id ? null : o.id)}
-                style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr auto', padding: '16px 20px', borderBottom: '1px solid rgba(21,20,15,0.06)', alignItems: 'center', cursor: 'pointer' }}
+                style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr auto auto', padding: '16px 20px', borderBottom: '1px solid rgba(21,20,15,0.06)', alignItems: 'center' }}
               >
-                <div>
+                <div style={{ cursor: 'pointer' }} onClick={() => setExpanded(expanded === o.id ? null : o.id)}>
                   <div style={{ ...F, fontSize: 12, color: '#15140f', fontWeight: 600 }}>{o.shipping_name || 'Guest'}</div>
                   <div style={{ ...F, fontSize: 11, color: 'rgba(21,20,15,0.5)', marginTop: 2 }}>#{(o.id).slice(0, 8).toUpperCase()}</div>
                 </div>
-                <div style={{ ...F, fontSize: 12, color: 'rgba(21,20,15,0.55)' }}>
+                <div style={{ ...F, fontSize: 12, color: 'rgba(21,20,15,0.55)', cursor: 'pointer' }} onClick={() => setExpanded(expanded === o.id ? null : o.id)}>
                   {new Date(o.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </div>
-                <div>
+                <div style={{ cursor: 'pointer' }} onClick={() => setExpanded(expanded === o.id ? null : o.id)}>
                   <span style={{ background: STATUS_BG[o.status] ?? '#f3f4f6', color: STATUS_COLOR[o.status] ?? '#374151', padding: '4px 10px', ...F, fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', fontWeight: 700 }}>
                     {o.status}
                   </span>
                 </div>
-                <div style={{ fontFamily: "'Prata',serif", fontSize: 16, color: '#15140f' }}>₹{Number(o.total).toLocaleString('en-IN')}</div>
-                <div style={{ ...F, fontSize: 12, color: 'rgba(21,20,15,0.4)' }}>{expanded === o.id ? '▲' : '▼'}</div>
+                <div style={{ fontFamily: "'Prata',serif", fontSize: 16, color: '#15140f', cursor: 'pointer' }} onClick={() => setExpanded(expanded === o.id ? null : o.id)}>₹{Number(o.total).toLocaleString('en-IN')}</div>
+                <Link href={`/admin/orders/${o.id}`} style={{ ...F, fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(21,20,15,0.5)', textDecoration: 'none', padding: '4px 8px', border: '1px solid rgba(21,20,15,0.15)', whiteSpace: 'nowrap' }}>
+                  Detail →
+                </Link>
+                <div style={{ ...F, fontSize: 12, color: 'rgba(21,20,15,0.4)', cursor: 'pointer', padding: '4px 8px' }} onClick={() => setExpanded(expanded === o.id ? null : o.id)}>{expanded === o.id ? '▲' : '▼'}</div>
               </div>
 
               {expanded === o.id && (
