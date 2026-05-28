@@ -14,6 +14,8 @@ interface Order {
   shipping_phone?: string
   shipping_address?: string
   shipping_city?: string
+  shipping_state?: string
+  shipping_pincode?: string
   order_items?: OrderItem[]
 }
 
@@ -113,7 +115,7 @@ export default function AdminOrders() {
                     <div>
                       <div style={{ ...F, fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(21,20,15,0.45)', marginBottom: 8 }}>Shipping Address</div>
                       <div style={{ ...F, fontSize: 13, color: '#15140f' }}>{o.shipping_address}</div>
-                      <div style={{ ...F, fontSize: 12, color: 'rgba(21,20,15,0.55)' }}>{o.shipping_city}</div>
+                      <div style={{ ...F, fontSize: 12, color: 'rgba(21,20,15,0.55)' }}>{o.shipping_city}{o.shipping_state ? `, ${o.shipping_state}` : ''} {o.shipping_pincode ?? ''}</div>
                     </div>
                   </div>
 

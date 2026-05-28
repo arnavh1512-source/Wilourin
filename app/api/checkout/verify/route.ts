@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
   for (const item of orderItems ?? []) {
     if (item.variant_id) {
       const { error } = await admin.rpc('decrement_stock', { p_variant_id: item.variant_id, p_qty: item.quantity })
-      if (error) console.error('Stock decrement failed for variant', item.variant_id, error)
+      if (error) console.error(`Stock decrement failed for variant ${item.variant_id}: ${error.message}`)
     }
   }
 

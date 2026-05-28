@@ -55,10 +55,11 @@ export default function OrderDetailPage() {
     fetch(`/api/admin/orders/${id}`)
       .then(r => r.json())
       .then(d => {
-        setOrder(d.data)
+        setOrder(d.data ?? null)
         setTrackingInput(d.data?.tracking_number ?? '')
-        setLoading(false)
       })
+      .catch(() => setOrder(null))
+      .finally(() => setLoading(false))
   }, [id])
 
   const showToast = (msg: string) => {

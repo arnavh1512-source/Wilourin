@@ -128,8 +128,8 @@ export default function CheckoutPage() {
           <div style={{ fontFamily: "'Prata',serif", fontSize: 20, color: C.marbleInk, marginBottom: 20 }}>Order Summary</div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
-            {items.map((it, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+            {items.map((it) => (
+              <div key={it.cartItemId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
                 <div>
                   <div style={{ ...F, fontSize: 13, color: C.marbleInk }}>{it.name}</div>
                   <div style={{ ...F, fontSize: 11, color: C.inkFaint }}>Size {it.size} · Qty {it.quantity}</div>

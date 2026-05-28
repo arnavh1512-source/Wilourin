@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
   const verifiedItems: CartItem[] = []
 
   for (const item of items as CartItem[]) {
-    if (!item.id || !item.name || item.quantity < 1) {
+    if (!item.id || !item.name || item.quantity < 1 || item.quantity > 100) {
       return NextResponse.json({ error: 'Invalid item data' }, { status: 400 })
     }
 
