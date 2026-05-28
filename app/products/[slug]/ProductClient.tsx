@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCartStore } from '@/lib/store'
@@ -25,6 +25,8 @@ interface Product {
   product_variants: Variant[]
 }
 
+const SIZE_ORDER = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+
 const FIT_MEASURES = [
   { key: 'chest',  label: 'Chest',  unit: 'cm', min: -6, max: 6, step: 0.5 },
   { key: 'waist',  label: 'Waist',  unit: 'cm', min: -6, max: 6, step: 0.5 },
@@ -45,8 +47,16 @@ export function ProductClient({ product }: { product: Product }) {
 
   const add = useCartStore(s => s.add)
 
+  const availableSizes = useMemo(() => {
+    if (variants.length === 0) return []
+    const variantSizes = new Set(variants.map(v => v.size))
+    return SIZE_ORDER.filter(size => variantSizes.has(size))
+  }, [variants])
+
+  const primaryImage = images.find(img => img.is_primary)?.url ?? images[0]?.url ?? ''
+
   const handleAdd = () => {
-    if (!selectedSize) { setError('Please select a size'); return }
+    if (!selectedSize && variants.length > 0) { setError('Please select a size'); return }
     const variant = variants.find(v => v.size === selectedSize)
     if (variant && variant.stock_qty === 0) { setError('This size is out of stock'); return }
     setError('')
@@ -56,9 +66,9 @@ export function ProductClient({ product }: { product: Product }) {
       id: product.id,
       variantId: variant?.id,
       name: product.name,
-      img: images[activeImg]?.url ?? images[0]?.url ?? '',
+      img: primaryImage,
       price: product.price,
-      size: selectedSize,
+      size: selectedSize || 'One Size',
       quantity: 1,
       customFit: hasCustomFit ? fit : undefined,
     })
@@ -124,11 +134,18 @@ export function ProductClient({ product }: { product: Product }) {
               Select Size {selectedSize && <span style={{ color: C.marbleInk, fontWeight: 700 }}>— {selectedSize}</span>}
             </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
-              {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(size => {
-                const available = variants.length === 0 || sizeAvailable(size)
+              {variants.length === 0 ? (
+                <span style={{ ...F, fontSize: 11, color: C.inkFaint }}>One Size</span>
+              ) : availableSizes.map(size => {
+                const available = sizeAvailable(size)
                 const active = selectedSize === size
                 return (
-                  <button key={size} onClick={() => available && setSelectedSize(size)} disabled={!available}
+                  <button
+                    key={size}
+                    onClick={() => { if (!available) return; setSelectedSize(size); setError('') }}
+                    disabled={!available}
+                    aria-pressed={active}
+                    aria-label={`Size ${size}${!available ? ' out of stock' : active ? ' selected' : ''}`}
                     style={{
                       width: 52, height: 52,
                       border: `1px solid ${active ? C.marbleInk : C.marbleLine}`,
