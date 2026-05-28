@@ -11,7 +11,7 @@ export default async function HomePage() {
   const [{ data: products }, { data: settings }] = await Promise.all([
     supabase
       .from('products')
-      .select('id, name, slug, price, original_price, badge, product_images(url, is_primary, display_order)')
+      .select('id, name, slug, price, original_price, badge, product_images(url, is_primary, display_order), product_variants(id, size, stock_qty)')
       .eq('is_published', true)
       .order('created_at', { ascending: false })
       .limit(6),

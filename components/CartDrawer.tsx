@@ -14,16 +14,15 @@ const C = {
   forestEmerald:  '#1f4a30',
 }
 
+const fmt = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' })
+
 export function CartDrawer() {
-  const { isOpen, close, items, remove, updateQty, getTotal } = useCartStore()
+  const { isOpen, close, items, remove, updateQty, getTotal, getCount } = useCartStore()
   const router = useRouter()
   const total = getTotal()
-  const itemCount = items.reduce((s, it) => s + it.quantity, 0)
+  const itemCount = getCount()
 
-  const goCheckout = () => {
-    close()
-    router.push('/checkout')
-  }
+  const goCheckout = () => { close(); router.push('/checkout') }
 
   return (
     <>
@@ -38,7 +37,6 @@ export function CartDrawer() {
         transition: 'transform 0.45s cubic-bezier(.2,.8,.2,1)',
         zIndex: 201, color: C.marbleInk, display: 'flex', flexDirection: 'column',
       }}>
-        {/* Header */}
         <div style={{ padding: '28px 32px', borderBottom: `1px solid ${C.marbleLine}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <div style={{ fontFamily: "'Raleway',sans-serif", fontSize: 10, letterSpacing: 2.5, color: C.marbleInkFaint }}>
@@ -49,14 +47,13 @@ export function CartDrawer() {
           <button onClick={close} style={{ background: 'transparent', border: 'none', color: C.marbleInk, fontSize: 22, cursor: 'pointer' }} aria-label="Close">✕</button>
         </div>
 
-        {/* Items */}
         <div style={{ flex: 1, overflow: 'auto', padding: '12px 32px' }}>
           {items.length === 0 ? (
             <div style={{ padding: '60px 0', textAlign: 'center', fontFamily: "'Prata',serif", fontStyle: 'italic', fontSize: 22, color: C.marbleInkFaint }}>
               Nothing here, <span style={{ color: C.forestEmerald }}>yet.</span>
             </div>
-          ) : items.map((it, i) => (
-            <div key={i} style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: 18, padding: '20px 0', borderBottom: `1px solid ${C.marbleLine}`, alignItems: 'start' }}>
+          ) : items.map((it) => (
+            <div key={it.cartItemId} style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: 18, padding: '20px 0', borderBottom: `1px solid ${C.marbleLine}`, alignItems: 'start' }}>
               <div style={{ height: 120, background: '#fafaf7', border: `1px solid ${C.marbleLine}`, overflow: 'hidden', position: 'relative' }}>
                 <Image src={it.img} alt={it.name} fill style={{ objectFit: 'cover', objectPosition: 'top' }} sizes="80px" />
               </div>
@@ -70,13 +67,17 @@ export function CartDrawer() {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 12 }}>
                   <div style={{ display: 'flex', alignItems: 'center', border: `1px solid ${C.marbleLine}` }}>
-                    <button onClick={() => updateQty(i, it.quantity - 1)} style={{ width: 28, height: 28, background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: "'Raleway',sans-serif", fontSize: 14, color: C.marbleInk }}>−</button>
+                    <button
+                      onClick={() => updateQty(it.cartItemId, it.quantity - 1)}
+                      disabled={it.quantity <= 1}
+                      style={{ width: 28, height: 28, background: 'transparent', border: 'none', cursor: it.quantity <= 1 ? 'not-allowed' : 'pointer', fontFamily: "'Raleway',sans-serif", fontSize: 14, color: it.quantity <= 1 ? 'rgba(21,20,15,0.2)' : C.marbleInk }}
+                    >−</button>
                     <span style={{ width: 28, textAlign: 'center', fontFamily: "'Raleway',sans-serif", fontSize: 13, color: C.marbleInk }}>{it.quantity}</span>
-                    <button onClick={() => updateQty(i, it.quantity + 1)} style={{ width: 28, height: 28, background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: "'Raleway',sans-serif", fontSize: 14, color: C.marbleInk }}>+</button>
+                    <button onClick={() => updateQty(it.cartItemId, it.quantity + 1)} style={{ width: 28, height: 28, background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: "'Raleway',sans-serif", fontSize: 14, color: C.marbleInk }}>+</button>
                   </div>
-                  <span style={{ fontFamily: "'Prata',serif", fontSize: 16, color: C.marbleInk }}>₹{(it.price * it.quantity).toLocaleString('en-IN')}</span>
+                  <span style={{ fontFamily: "'Prata',serif", fontSize: 16, color: C.marbleInk }}>{fmt.format(it.price * it.quantity)}</span>
                 </div>
-                <button onClick={() => remove(i)} style={{ background: 'transparent', border: 'none', color: C.marbleInkFaint, fontFamily: "'Raleway',sans-serif", fontSize: 9, letterSpacing: 1.5, marginTop: 8, padding: 0, cursor: 'pointer', textTransform: 'uppercase', textDecoration: 'underline' }}>
+                <button onClick={() => remove(it.cartItemId)} style={{ background: 'transparent', border: 'none', color: C.marbleInkFaint, fontFamily: "'Raleway',sans-serif", fontSize: 9, letterSpacing: 1.5, marginTop: 8, padding: 0, cursor: 'pointer', textTransform: 'uppercase', textDecoration: 'underline' }}>
                   Remove
                 </button>
               </div>
@@ -84,12 +85,11 @@ export function CartDrawer() {
           ))}
         </div>
 
-        {/* Footer */}
         {items.length > 0 && (
           <div style={{ padding: '24px 32px', borderTop: `1px solid ${C.marbleLine}` }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 16 }}>
               <span style={{ fontFamily: "'Raleway',sans-serif", fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: C.marbleInkFaint }}>Subtotal</span>
-              <span style={{ fontFamily: "'Prata',serif", fontSize: 22, color: C.marbleInk }}>₹{total.toLocaleString('en-IN')}</span>
+              <span style={{ fontFamily: "'Prata',serif", fontSize: 22, color: C.marbleInk }}>{fmt.format(total)}</span>
             </div>
             <p style={{ fontFamily: "'Raleway',sans-serif", fontSize: 11, color: C.marbleInkFaint, marginBottom: 16, lineHeight: 1.5 }}>
               Shipping calculated at checkout.

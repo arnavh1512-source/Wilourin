@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCartStore } from '@/lib/store'
@@ -15,18 +15,14 @@ const C = {
   cream:          '#e8e4d8',
 }
 
-const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
-
-const FALLBACK = [
-  { id: 'f1', name: 'Oversized Blazer', slug: null, price: 4200, original_price: null, badge: null, category: 'BLAZERS', product_images: [{ url: '/productBlazer.png', is_primary: true, display_order: 0 }], product_variants: [] },
-  { id: 'f2', name: 'Bias Mini',        slug: null, price: 2800, original_price: null, badge: null, category: 'DRESSES', product_images: [{ url: '/productDress.png',  is_primary: true, display_order: 0 }], product_variants: [] },
-]
+const SIZE_ORDER = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+const fmt = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' })
 
 interface ProductImage { url: string; is_primary: boolean; display_order: number }
-interface Variant { size: string; stock_qty: number }
+interface Variant { id: string; size: string; stock_qty: number }
 interface Product {
   id: string; name: string; slug: string | null; price: number
-  original_price?: number | null; badge?: string | null; category?: string | null
+  original_price?: number | null; badge?: string | null
   product_images?: ProductImage[]; product_variants?: Variant[]
 }
 
@@ -38,10 +34,20 @@ function ProductCard({ p }: { p: Product }) {
   const toggle  = useWishlistStore(s => s.toggle)
   const isLiked = useWishlistStore(s => s.has(p.id))
 
-  const sorted = [...(p.product_images ?? [])].sort((a, b) => a.display_order - b.display_order)
-  const img1 = sorted[0]?.url ?? '/productBlazer.png'
+  const sorted = useMemo(() =>
+    [...(p.product_images ?? [])].sort((a, b) => a.display_order - b.display_order),
+    [p.product_images]
+  )
+
+  const img1 = sorted[0]?.url
   const img2 = sorted[1]?.url ?? null
   const variants = p.product_variants ?? []
+
+  const availableSizes = useMemo(() => {
+    if (variants.length === 0) return []
+    const variantSizes = new Set(variants.map(v => v.size))
+    return SIZE_ORDER.filter(size => variantSizes.has(size))
+  }, [variants])
 
   const isAvailable = (size: string) => {
     const v = variants.find(x => x.size === size)
@@ -51,19 +57,25 @@ function ProductCard({ p }: { p: Product }) {
   const handleSizeClick = (e: React.MouseEvent, size: string) => {
     e.preventDefault(); e.stopPropagation()
     if (!isAvailable(size)) return
-    add({ id: p.id, name: p.name, img: img1, price: p.price, size, quantity: 1 })
+    add({
+      id: p.id,
+      variantId: variants.find(v => v.size === size)?.id,
+      name: p.name,
+      img: img1 ?? '',
+      price: p.price,
+      size,
+      quantity: 1,
+    })
     setAdded(true); setSizeOpen(false)
     setTimeout(() => setAdded(false), 2000)
   }
 
-  const toggleSize = (e: React.MouseEvent) => {
-    e.preventDefault(); e.stopPropagation()
-    setSizeOpen(o => !o)
-  }
+  const toggleSize = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); setSizeOpen(o => !o) }
+
+  if (!img1) return null
 
   const inner = (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
-      {/* Image with dual-swap on hover */}
       <div
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
@@ -97,20 +109,20 @@ function ProductCard({ p }: { p: Product }) {
         )}
       </div>
 
-      {/* Info + size picker */}
       <div style={{ paddingTop: 20, display: 'flex', flexDirection: 'column', gap: 4 }}>
         <div style={{ fontFamily: "'Prata',serif", fontSize: 22, color: C.marbleInk, lineHeight: 1.15, letterSpacing: '-0.01em' }}>{p.name}</div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
-          <span style={{ fontFamily: "'Prata',serif", fontSize: 16, color: C.marbleInk }}>₹{Number(p.price).toLocaleString('en-IN')}</span>
-          {p.original_price && <span style={{ fontFamily: "'Raleway',sans-serif", fontSize: 12, color: C.marbleInkFaint, textDecoration: 'line-through' }}>₹{Number(p.original_price).toLocaleString('en-IN')}</span>}
+          <span style={{ fontFamily: "'Prata',serif", fontSize: 16, color: C.marbleInk }}>{fmt.format(p.price)}</span>
+          {p.original_price && (
+            <span style={{ fontFamily: "'Raleway',sans-serif", fontSize: 12, color: C.marbleInkFaint, textDecoration: 'line-through' }}>{fmt.format(p.original_price)}</span>
+          )}
         </div>
 
-        {/* Inline size picker (Zara quick-add) */}
         {sizeOpen ? (
           <div onClick={e => e.stopPropagation()} style={{ marginTop: 10, border: `1px solid ${C.marbleLine}`, padding: '12px 12px 14px' }}>
             <div style={{ fontFamily: "'Raleway',sans-serif", fontSize: 8, letterSpacing: 2, textTransform: 'uppercase', color: C.marbleInkFaint, marginBottom: 10 }}>Select Size</div>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              {SIZES.map(size => {
+              {availableSizes.length > 0 ? availableSizes.map(size => {
                 const avail = isAvailable(size)
                 return (
                   <button key={size} onClick={e => handleSizeClick(e, size)} disabled={!avail}
@@ -119,13 +131,15 @@ function ProductCard({ p }: { p: Product }) {
                     onMouseLeave={e => { const b = e.target as HTMLButtonElement; b.style.background = 'transparent'; b.style.color = avail ? C.marbleInk : 'rgba(21,20,15,0.2)' }}
                   >{size}</button>
                 )
-              })}
+              }) : (
+                <span style={{ fontFamily: "'Raleway',sans-serif", fontSize: 11, color: C.marbleInkFaint }}>One Size</span>
+              )}
             </div>
           </div>
         ) : (
-          <div onClick={toggleSize} style={{ marginTop: 10, padding: '13px 0', background: added ? C.forestDark : hover ? C.forestDark : 'transparent', color: added ? C.cream : hover ? C.cream : C.marbleInk, border: `1px solid ${C.marbleLine}`, fontFamily: "'Raleway',sans-serif", fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', fontWeight: 600, textAlign: 'center', transition: 'background 0.25s, color 0.25s', cursor: 'pointer' }}>
-            {added ? '✓ Added to Bag' : 'Select Size →'}
-          </div>
+          <button onClick={toggleSize} style={{ marginTop: 10, padding: '13px 0', background: added ? C.forestDark : hover ? C.forestDark : 'transparent', color: added ? C.cream : hover ? C.cream : C.marbleInk, border: `1px solid ${C.marbleLine}`, fontFamily: "'Raleway',sans-serif", fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', fontWeight: 600, textAlign: 'center', transition: 'background 0.25s, color 0.25s', cursor: 'pointer' }}>
+            {added ? '✓ Added to Bag' : availableSizes.length > 0 ? 'Select Size →' : 'Add to Bag →'}
+          </button>
         )}
       </div>
     </div>
@@ -136,8 +150,6 @@ function ProductCard({ p }: { p: Product }) {
 }
 
 export function ProductsSection({ products }: { products: Product[] }) {
-  const all = products.length > 0 ? products : FALLBACK
-
   return (
     <section id="collection" className="products-section" style={{ backgroundColor: C.marbleBase, padding: '100px 40px 120px', position: 'relative' }}>
       <div style={{ borderBottom: `1px solid ${C.marbleLine}`, paddingBottom: 28, marginBottom: 48 }} className="section-head">
@@ -147,9 +159,9 @@ export function ProductsSection({ products }: { products: Product[] }) {
       </div>
 
       <div className="products-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 40 }}>
-        {all.length > 0
-          ? all.map(p => <ProductCard key={p.id} p={p} />)
-          : <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '60px 0', fontFamily: "'Prata',serif", fontSize: 18, color: C.marbleInkFaint, fontStyle: 'italic' }}>No items in this category yet.</div>
+        {products.length > 0
+          ? products.map(p => <ProductCard key={p.id} p={p} />)
+          : <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '60px 0', fontFamily: "'Prata',serif", fontSize: 18, color: C.marbleInkFaint, fontStyle: 'italic' }}>No items in the collection yet.</div>
         }
       </div>
 
