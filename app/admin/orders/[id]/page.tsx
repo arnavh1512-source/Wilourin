@@ -41,6 +41,7 @@ const STATUS_BG: Record<string, string> = {
 }
 
 const F = { fontFamily: "'Raleway',sans-serif" }
+const fmt = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' })
 
 export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -149,13 +150,13 @@ export default function OrderDetailPage() {
                   </div>
                 </div>
                 <div style={{ fontFamily: "'Prata',serif", fontSize: 15, color: '#15140f', whiteSpace: 'nowrap' }}>
-                  ₹{(item.price * item.quantity).toLocaleString('en-IN')}
+                  {fmt.format(item.price * item.quantity)}
                 </div>
               </div>
             ))}
             <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 12, borderTop: '1px solid rgba(21,20,15,0.1)', marginTop: 4 }}>
               <div style={{ ...F, fontSize: 13, color: '#15140f', fontWeight: 600 }}>Total</div>
-              <div style={{ fontFamily: "'Prata',serif", fontSize: 20, color: '#15140f' }}>₹{Number(order.total).toLocaleString('en-IN')}</div>
+              <div style={{ fontFamily: "'Prata',serif", fontSize: 20, color: '#15140f' }}>{fmt.format(order.total)}</div>
             </div>
           </section>
 

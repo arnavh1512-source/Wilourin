@@ -9,7 +9,13 @@ export async function createClient() {
     {
       cookies: {
         getAll:    () => cookieStore.getAll(),
-        setAll: (c) => { try { c.forEach(({ name, value, options }) => cookieStore.set(name, value, options)) } catch {} },
+        setAll: (c) => {
+          try {
+            c.forEach(({ name, value, options }) => cookieStore.set(name, value, options))
+          } catch (e) {
+            console.warn('Supabase cookie set failed (expected in Server Components):', e)
+          }
+        },
       },
     }
   )

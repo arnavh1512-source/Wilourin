@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCartStore } from '@/lib/store'
 import { createClient } from '@/lib/supabase/client'
@@ -15,6 +16,7 @@ const C = {
   inkFaint:    'rgba(21,20,15,0.55)',
 }
 const F = { fontFamily: "'Raleway',sans-serif" }
+const fmt = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' })
 
 declare global { interface Window { Razorpay: new (opts: object) => { open(): void } } }
 
@@ -94,7 +96,7 @@ export default function CheckoutPage() {
     return (
       <div style={{ minHeight: '100vh', background: C.marbleBase, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
         <p style={{ fontFamily: "'Prata',serif", fontSize: 22, color: C.inkFaint, fontStyle: 'italic' }}>Your bag is empty.</p>
-        <a href="/" style={{ ...F, fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', color: C.marbleInk, textDecoration: 'underline' }}>Continue Shopping</a>
+        <Link href="/" style={{ ...F, fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', color: C.marbleInk, textDecoration: 'underline' }}>Continue Shopping</Link>
       </div>
     )
   }
@@ -102,7 +104,7 @@ export default function CheckoutPage() {
   return (
     <div style={{ minHeight: '100vh', background: C.marbleBase }}>
       <div style={{ borderBottom: `1px solid ${C.marbleLine}`, padding: '20px 40px' }}>
-        <a href="/"><Logo height={36} /></a>
+        <Link href="/"><Logo height={36} /></Link>
       </div>
 
       <div className="checkout-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 420px', maxWidth: 1100, margin: '0 auto', padding: '48px 24px', gap: 48, alignItems: 'start' }}>
@@ -134,19 +136,19 @@ export default function CheckoutPage() {
                   <div style={{ ...F, fontSize: 13, color: C.marbleInk }}>{it.name}</div>
                   <div style={{ ...F, fontSize: 11, color: C.inkFaint }}>Size {it.size} · Qty {it.quantity}</div>
                 </div>
-                <div style={{ fontFamily: "'Prata',serif", fontSize: 14, color: C.marbleInk, whiteSpace: 'nowrap' }}>₹{(it.price * it.quantity).toLocaleString('en-IN')}</div>
+                <div style={{ fontFamily: "'Prata',serif", fontSize: 14, color: C.marbleInk, whiteSpace: 'nowrap' }}>{fmt.format(it.price * it.quantity)}</div>
               </div>
             ))}
           </div>
 
           <div style={{ borderTop: `1px solid ${C.marbleLine}`, paddingTop: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 24 }}>
             <span style={{ ...F, fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: C.inkFaint }}>Total</span>
-            <span style={{ fontFamily: "'Prata',serif", fontSize: 24, color: C.marbleInk }}>₹{total.toLocaleString('en-IN')}</span>
+            <span style={{ fontFamily: "'Prata',serif", fontSize: 24, color: C.marbleInk }}>{fmt.format(total)}</span>
           </div>
 
           <button onClick={handlePay} disabled={paying}
             style={{ width: '100%', padding: '16px 0', background: paying ? C.inkFaint : C.forestDark, color: C.cream, border: 'none', ...F, fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', fontWeight: 600, cursor: paying ? 'wait' : 'pointer', transition: 'background 0.2s' }}>
-            {paying ? 'Processing…' : `Pay ₹${total.toLocaleString('en-IN')} →`}
+            {paying ? 'Processing…' : `Pay ${fmt.format(total)} →`}
           </button>
 
           <p style={{ ...F, fontSize: 10, color: C.inkFaint, textAlign: 'center', marginTop: 12 }}>Secured by Razorpay</p>

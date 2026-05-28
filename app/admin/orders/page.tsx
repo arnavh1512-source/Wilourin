@@ -57,6 +57,7 @@ export default function AdminOrders() {
   }
 
   const F = { fontFamily: "'Raleway',sans-serif" }
+  const fmt = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' })
 
   return (
     <div>
@@ -96,7 +97,7 @@ export default function AdminOrders() {
                     {o.status}
                   </span>
                 </div>
-                <div style={{ fontFamily: "'Prata',serif", fontSize: 16, color: '#15140f', cursor: 'pointer' }} onClick={() => setExpanded(expanded === o.id ? null : o.id)}>₹{Number(o.total).toLocaleString('en-IN')}</div>
+                <div style={{ fontFamily: "'Prata',serif", fontSize: 16, color: '#15140f', cursor: 'pointer' }} onClick={() => setExpanded(expanded === o.id ? null : o.id)}>{fmt.format(o.total)}</div>
                 <Link href={`/admin/orders/${o.id}`} style={{ ...F, fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(21,20,15,0.5)', textDecoration: 'none', padding: '4px 8px', border: '1px solid rgba(21,20,15,0.15)', whiteSpace: 'nowrap' }}>
                   Detail →
                 </Link>
@@ -124,7 +125,7 @@ export default function AdminOrders() {
                     {o.order_items?.map((item, i) => (
                       <div key={i} style={{ display: 'flex', justifyContent: 'space-between', ...F, fontSize: 13, color: '#15140f', marginBottom: 4 }}>
                         <span>{item.product_name} {item.size && `— ${item.size}`} × {item.quantity}</span>
-                        <span>₹{(item.price * item.quantity).toLocaleString('en-IN')}</span>
+                        <span>{fmt.format(item.price * item.quantity)}</span>
                       </div>
                     ))}
                   </div>
