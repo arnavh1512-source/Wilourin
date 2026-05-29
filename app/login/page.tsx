@@ -33,7 +33,7 @@ function LoginContent() {
     <>
       {error && (
         <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626', padding: '12px 16px', marginBottom: 24, fontFamily: "'Raleway',sans-serif", fontSize: 13 }}>
-          Sign-in failed. Please try again.
+          Sign-in failed: {error}
         </div>
       )}
 
