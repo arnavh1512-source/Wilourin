@@ -19,10 +19,11 @@ export default function AdminSettings() {
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
-    fetch('/api/admin/settings').then(r => r.json()).then(json => {
-      setSettings(json.data ?? {})
-      setLoading(false)
-    })
+    fetch('/api/admin/settings')
+      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then(json => setSettings(json.data ?? {}))
+      .catch(() => {})
+      .finally(() => setLoading(false))
   }, [])
 
   const save = async () => {

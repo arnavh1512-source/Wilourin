@@ -72,7 +72,8 @@ export default function AdminProducts() {
     const res = await fetch('/api/admin/upload', { method: 'POST', headers: { authorization: `Bearer ${token}` }, body: fd })
     const json = await res.json()
     setUploading(false)
-    if (json.url) setForm(f => ({ ...f, images: [...f.images, json.url] }))
+    if (!res.ok || !json.url) { alert(`Upload failed: ${json.error ?? 'Unknown error'}`); return }
+    setForm(f => ({ ...f, images: [...f.images, json.url] }))
   }
 
   const removeImage = (idx: number) =>
@@ -102,8 +103,10 @@ export default function AdminProducts() {
   const remove = async (id: string) => {
     if (!confirm('Delete this product?')) return
     setDeleting(id)
-    await fetch('/api/admin/products', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
-    setDeleting(null); load()
+    const res = await fetch('/api/admin/products', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
+    setDeleting(null)
+    if (!res.ok) { const j = await res.json(); alert(j.error ?? 'Delete failed'); }
+    load()
   }
 
   return (

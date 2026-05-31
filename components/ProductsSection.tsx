@@ -166,7 +166,9 @@ export function ProductsSection({ products, searchQuery }: { products: Product[]
       <div className="products-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 40 }}>
         {products.length > 0
           ? products.map(p => <ProductCard key={p.id} p={p} />)
-          : <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '60px 0', fontFamily: "'Prata',serif", fontSize: 18, color: C.marbleInkFaint, fontStyle: 'italic' }}>No items in the collection yet.</div>
+          : <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '60px 0', fontFamily: "'Prata',serif", fontSize: 18, color: C.marbleInkFaint, fontStyle: 'italic' }}>
+              {searchQuery ? `No results for "${searchQuery}".` : 'No items in the collection yet.'}
+            </div>
         }
       </div>
 

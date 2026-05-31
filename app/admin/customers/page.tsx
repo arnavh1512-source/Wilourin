@@ -34,8 +34,9 @@ export default function AdminCustomers() {
     const newRole = currentRole === 'admin' ? 'customer' : 'admin'
     if (!confirm(`Change role to ${newRole}?`)) return
     setUpdating(id)
-    await fetch('/api/admin/customers', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, role: newRole }) })
+    const res = await fetch('/api/admin/customers', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, role: newRole }) })
     setUpdating(null)
+    if (!res.ok) { alert('Failed to update role. Please try again.'); return }
     setCustomers(cs => cs.map(c => c.id === id ? { ...c, role: newRole } : c))
   }
 
