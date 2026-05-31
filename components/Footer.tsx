@@ -50,11 +50,10 @@ const STUDIO = [
   { label: 'Press',           href: 'mailto:press@wilourin.com' },
 ]
 const HELP = [
-  { label: 'Contact',    href: 'mailto:hello@wilourin.com' },
-  { label: 'Shipping',   href: '/shipping' },
-  { label: 'Returns',    href: '/returns' },
-  { label: 'Size guide', href: '#' },
-  { label: 'FAQ',        href: '#' },
+  { label: 'Contact',            href: '/contact' },
+  { label: 'Returns & Exchange', href: '/returns' },
+  { label: 'Size guide',         href: '/size-guide' },
+  { label: 'FAQ',                href: '/faq' },
 ]
 
 export function Footer() {
