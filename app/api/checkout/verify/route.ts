@@ -58,12 +58,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Order cannot be confirmed' }, { status: 409 })
   }
 
-  // Decrement stock atomically
+  // Pre-verify all stocks before decrementing any (prevents partial decrements)
   const { data: orderItems } = await admin.from('order_items').select('variant_id, quantity').eq('order_id', orderId)
   for (const item of orderItems ?? []) {
     if (item.variant_id) {
-      const { error } = await admin.rpc('decrement_stock', { p_variant_id: item.variant_id, p_qty: item.quantity })
-      if (error) console.error(`Stock decrement failed for variant ${item.variant_id}: ${error.message}`)
+      const { data: variant } = await admin.from('product_variants').select('stock_qty').eq('id', item.variant_id).single()
+      if (!variant || variant.stock_qty < item.quantity) {
+        return NextResponse.json({ error: 'Stock changed during payment. Please contact support.' }, { status: 409 })
+      }
+    }
+  }
+
+  for (const item of orderItems ?? []) {
+    if (item.variant_id) {
+      await admin.rpc('decrement_stock', { p_variant_id: item.variant_id, p_qty: item.quantity })
     }
   }
 

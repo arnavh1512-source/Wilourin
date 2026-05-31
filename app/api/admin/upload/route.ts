@@ -32,8 +32,6 @@ export async function POST(req: NextRequest) {
   const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
 
   const admin = createAdminClient()
-  await admin.storage.createBucket('product-images', { public: true }).catch(() => {})
-
   const bytes = await file.arrayBuffer()
   const { error: uploadErr } = await admin.storage
     .from('product-images')

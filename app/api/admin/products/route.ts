@@ -17,11 +17,13 @@ function toSlug(name: string) {
 async function uniqueSlug(base: string, admin: ReturnType<typeof createAdmin>): Promise<string> {
   let slug = base
   let n = 2
-  while (true) {
+  let attempts = 0
+  while (attempts++ < 100) {
     const { data } = await admin.from('products').select('id').eq('slug', slug).maybeSingle()
     if (!data) return slug
     slug = `${base}-${n++}`
   }
+  throw new Error('Could not generate unique slug after 100 attempts')
 }
 
 export async function GET() {
@@ -120,6 +122,20 @@ export async function DELETE(req: NextRequest) {
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
 
   const admin = createAdmin()
+
+  // Block delete if product has order history
+  const { data: orderItems } = await admin.from('order_items').select('id').eq('product_id', id).limit(1)
+  if (orderItems?.length) {
+    return NextResponse.json({ error: 'Cannot delete a product that has order history. Unpublish it instead.' }, { status: 409 })
+  }
+
+  // Clean up storage images before deleting
+  const { data: images } = await admin.from('product_images').select('url').eq('product_id', id)
+  for (const img of images ?? []) {
+    const path = img.url.split('/').pop()
+    if (path) await admin.storage.from('product-images').remove([path])
+  }
+
   const { error } = await admin.from('products').delete().eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ success: true })
