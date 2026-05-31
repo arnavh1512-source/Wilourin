@@ -58,9 +58,10 @@ export async function POST(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   if (images.length) {
-    await admin.from('product_images').insert(
+    const { error: imgErr } = await admin.from('product_images').insert(
       images.map((url: string, i: number) => ({ product_id: product.id, url, is_primary: i === 0, display_order: i }))
     )
+    if (imgErr) return NextResponse.json({ error: `Product saved but image insert failed: ${imgErr.message}` }, { status: 500 })
   }
 
   if (variants.length) {
@@ -95,6 +96,16 @@ export async function PATCH(req: NextRequest) {
       await admin.from('product_variants').insert(
         variants.map((v: { size: string; stock_qty: number }) => ({ product_id: id, size: v.size, stock_qty: v.stock_qty ?? 0 }))
       )
+    }
+  }
+
+  if (images) {
+    await admin.from('product_images').delete().eq('product_id', id)
+    if (images.length) {
+      const { error: imgErr } = await admin.from('product_images').insert(
+        images.map((url: string, i: number) => ({ product_id: id, url, is_primary: i === 0, display_order: i }))
+      )
+      if (imgErr) return NextResponse.json({ error: `Product saved but image insert failed: ${imgErr.message}` }, { status: 500 })
     }
   }
 
