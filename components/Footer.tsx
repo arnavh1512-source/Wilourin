@@ -111,7 +111,7 @@ export function Footer() {
           © 2026 WILOURIN STUDIO PVT LTD<br />
           <span style={{ fontSize: 18, letterSpacing: 3 }}>AHMEDABAD</span>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 8 }}>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram" style={{ color: C.creamFaint }}>
+            <a href="https://www.instagram.com/wilourin" target="_blank" rel="noopener noreferrer" aria-label="Instagram" style={{ color: C.creamFaint }}>
               <InstagramIcon />
             </a>
             <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '919909538890'}`} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" style={{ color: C.creamFaint }}>
