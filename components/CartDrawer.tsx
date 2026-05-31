@@ -26,7 +26,7 @@ export function CartDrawer() {
 
   return (
     <>
-      <div onClick={close} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', opacity: isOpen ? 1 : 0, pointerEvents: isOpen ? 'auto' : 'none', transition: 'opacity 0.3s', zIndex: 200 }} />
+      <div role="button" aria-label="Close cart" tabIndex={isOpen ? 0 : -1} onClick={close} onKeyDown={e => { if (e.key === 'Enter' || e.key === 'Escape') close() }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', opacity: isOpen ? 1 : 0, pointerEvents: isOpen ? 'auto' : 'none', transition: 'opacity 0.3s', zIndex: 200 }} />
 
       <aside style={{
         position: 'fixed', top: 0, right: 0, bottom: 0,

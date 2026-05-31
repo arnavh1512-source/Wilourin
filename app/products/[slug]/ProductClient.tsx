@@ -196,6 +196,7 @@ export function ProductClient({ product }: { product: Product }) {
                         <div style={{ height: 1, background: C.marbleLine, position: 'absolute', top: '50%', left: 0, right: 0 }} />
                         <input
                           type="range" min={m.min} max={m.max} step={m.step} value={val}
+                          aria-label={`${m.label} adjustment in centimetres`}
                           onChange={e => setFit(f => ({ ...f, [m.key]: parseFloat(e.target.value) }))}
                           style={{ width: '100%', appearance: 'none', background: 'transparent', cursor: 'pointer', position: 'relative', zIndex: 1, margin: 0 }}
                         />
@@ -234,8 +235,7 @@ export function ProductClient({ product }: { product: Product }) {
 
           {/* Care + Size guide */}
           <div style={{ marginTop: 32, display: 'flex', gap: 24 }}>
-            <button style={{ background: 'transparent', border: 'none', cursor: 'pointer', ...F, fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase', color: C.inkFaint, textDecoration: 'underline', padding: 0 }}>Size Guide</button>
-            <button style={{ background: 'transparent', border: 'none', cursor: 'pointer', ...F, fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase', color: C.inkFaint, textDecoration: 'underline', padding: 0 }}>Care & Materials</button>
+            <a href="/size-guide" style={{ background: 'transparent', border: 'none', cursor: 'pointer', ...F, fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase', color: C.inkFaint, textDecoration: 'underline', padding: 0 }}>Size Guide</a>
           </div>
         </div>
       </div>

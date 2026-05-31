@@ -1,7 +1,7 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export default async function AdminDashboard() {
-  const supabase = await createClient()
+  const admin = createAdminClient()
 
   const [
     { count: totalProducts },
@@ -9,10 +9,10 @@ export default async function AdminDashboard() {
     { count: totalCustomers },
     { data: recentOrders },
   ] = await Promise.all([
-    supabase.from('products').select('*', { count: 'exact', head: true }),
-    supabase.from('orders').select('*', { count: 'exact', head: true }),
-    supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'customer'),
-    supabase.from('orders').select('id,status,total,created_at,shipping_name').order('created_at', { ascending: false }).limit(5),
+    admin.from('products').select('*', { count: 'exact', head: true }),
+    admin.from('orders').select('*', { count: 'exact', head: true }),
+    admin.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'customer'),
+    admin.from('orders').select('id,status,total,created_at,shipping_name').order('created_at', { ascending: false }).limit(5),
   ])
 
   const stats = [

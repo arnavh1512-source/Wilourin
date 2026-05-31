@@ -24,8 +24,9 @@ export default function AdminSettings() {
 
   const save = async () => {
     setSaving(true)
-    await fetch('/api/admin/settings', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(settings) })
+    const res = await fetch('/api/admin/settings', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(settings) })
     setSaving(false)
+    if (!res.ok) { alert('Failed to save settings. Please try again.'); return }
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }

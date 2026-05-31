@@ -149,13 +149,18 @@ function ProductCard({ p }: { p: Product }) {
   return inner
 }
 
-export function ProductsSection({ products }: { products: Product[] }) {
+export function ProductsSection({ products, searchQuery }: { products: Product[]; searchQuery?: string }) {
   return (
     <section id="collection" className="products-section" style={{ backgroundColor: C.marbleBase, padding: '100px 40px 120px', position: 'relative' }}>
       <div style={{ borderBottom: `1px solid ${C.marbleLine}`, paddingBottom: 28, marginBottom: 48 }} className="section-head">
         <h2 style={{ fontFamily: "'Prata',serif", fontSize: 'clamp(44px,6vw,80px)', lineHeight: 0.95, margin: 0, fontWeight: 400, color: C.marbleInk, letterSpacing: '-0.015em' }}>
-          The Collection
+          {searchQuery ? `"${searchQuery}"` : 'The Collection'}
         </h2>
+        {searchQuery && (
+          <p style={{ fontFamily: "'Raleway',sans-serif", fontSize: 13, color: C.marbleInkFaint, marginTop: 12 }}>
+            {products.length} result{products.length !== 1 ? 's' : ''}
+          </p>
+        )}
       </div>
 
       <div className="products-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 40 }}>

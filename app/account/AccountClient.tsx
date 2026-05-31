@@ -77,8 +77,9 @@ export function AccountClient({ user, profile, orders }: Props) {
 
   const saveProfile = async () => {
     setSaving(true)
-    await createClient().from('profiles').update({ full_name: name, phone }).eq('id', user.id)
+    const { error } = await createClient().from('profiles').update({ full_name: name, phone }).eq('id', user.id)
     setSaving(false)
+    if (error) { alert('Failed to save profile. Please try again.'); return }
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
