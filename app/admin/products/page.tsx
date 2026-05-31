@@ -89,12 +89,13 @@ export default function AdminProducts() {
       images: form.images,
       variants: form.variants.filter(v => v.stock_qty > 0),
     }
-    if (editing) {
-      await fetch('/api/admin/products', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: editing.id, ...payload }) })
-    } else {
-      await fetch('/api/admin/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-    }
-    setSaving(false); setModal(false); load()
+    const res = editing
+      ? await fetch('/api/admin/products', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: editing.id, ...payload }) })
+      : await fetch('/api/admin/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+    const json = await res.json()
+    setSaving(false)
+    if (!res.ok) { alert(`Save failed: ${json.error ?? res.status}`); return }
+    setModal(false); load()
   }
 
   const remove = async (id: string) => {
