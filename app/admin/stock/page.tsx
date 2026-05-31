@@ -25,8 +25,10 @@ export default function AdminStock() {
 
   useEffect(() => {
     fetch('/api/admin/stock')
-      .then(r => r.json())
-      .then(d => { setProducts(d.data ?? []); setLoading(false) })
+      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then(d => setProducts(d.data ?? []))
+      .catch(() => {})
+      .finally(() => setLoading(false))
   }, [])
 
   const showToast = (msg: string) => {
@@ -59,6 +61,8 @@ export default function AdminStock() {
       ))
       cancelEdit(variantId)
       showToast('Stock updated')
+    } else {
+      showToast('Failed to update stock')
     }
     setSaving(null)
   }

@@ -32,6 +32,7 @@ const STATUS_BG: Record<string, string> = {
 }
 
 const F = { fontFamily: "'Raleway',sans-serif" }
+const fmt = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' })
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState<Order[]>([])
@@ -61,7 +62,6 @@ export default function AdminOrders() {
     setOrders(os => os.map(o => o.id === id ? { ...o, status } : o))
   }
 
-  const fmt = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' })
 
   return (
     <div>

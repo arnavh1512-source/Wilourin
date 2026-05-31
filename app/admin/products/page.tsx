@@ -20,6 +20,8 @@ const emptyForm = {
   variants: SIZES.map(s => ({ size: s, stock_qty: 0 })),
 }
 
+const F = { fontFamily: "'Raleway',sans-serif" }
+
 export default function AdminProducts() {
   const [products, setProducts]   = useState<Product[]>([])
   const [loading, setLoading]     = useState(true)
@@ -30,7 +32,6 @@ export default function AdminProducts() {
   const [deleting, setDeleting]   = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
-  const F = { fontFamily: "'Raleway',sans-serif" }
 
   const load = async () => {
     setLoading(true)

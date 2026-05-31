@@ -71,27 +71,34 @@ export default function OrderDetailPage() {
   const updateStatus = async (status: string) => {
     if (!order || saving) return
     setSaving(true)
-    const body: Record<string, string> = { id: order.id, status }
-    await fetch('/api/admin/orders', {
+    const res = await fetch('/api/admin/orders', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      body: JSON.stringify({ id: order.id, status }),
     })
-    setOrder(o => o ? { ...o, status } : o)
-    showToast(`Status → ${status}`)
+    if (res.ok) {
+      setOrder(o => o ? { ...o, status } : o)
+      showToast(`Status → ${status}`)
+    } else {
+      showToast('Failed to update status')
+    }
     setSaving(false)
   }
 
   const saveTracking = async () => {
     if (!order || saving) return
     setSaving(true)
-    await fetch('/api/admin/orders', {
+    const res = await fetch('/api/admin/orders', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: order.id, tracking_number: trackingInput }),
     })
-    setOrder(o => o ? { ...o, tracking_number: trackingInput } : o)
-    showToast('Tracking number saved')
+    if (res.ok) {
+      setOrder(o => o ? { ...o, tracking_number: trackingInput } : o)
+      showToast('Tracking number saved')
+    } else {
+      showToast('Failed to save tracking number')
+    }
     setSaving(false)
   }
 
