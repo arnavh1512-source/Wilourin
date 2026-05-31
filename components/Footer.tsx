@@ -54,6 +54,7 @@ const HELP = [
   { label: 'Returns & Exchange', href: '/returns' },
   { label: 'Size guide',         href: '/size-guide' },
   { label: 'FAQ',                href: '/faq' },
+  { label: 'Privacy Policy',     href: '/privacy' },
 ]
 
 export function Footer() {
