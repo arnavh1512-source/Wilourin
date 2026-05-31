@@ -40,6 +40,7 @@ export default async function ProductPage({ params }: Props) {
     .eq('is_published', true)
     .single()
 
+  if (error) console.error('Product fetch error:', error.message)
   if (error || !product) notFound()
 
   return <ProductClient product={product} />

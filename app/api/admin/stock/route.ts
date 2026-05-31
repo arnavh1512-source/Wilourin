@@ -29,8 +29,8 @@ export async function PATCH(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { variantId, stock_qty } = await req.json()
-  if (!variantId || typeof stock_qty !== 'number' || stock_qty < 0) {
-    return NextResponse.json({ error: 'variantId and non-negative stock_qty required' }, { status: 400 })
+  if (!variantId || typeof stock_qty !== 'number' || stock_qty < 0 || stock_qty > 100000) {
+    return NextResponse.json({ error: 'variantId and stock_qty between 0–100000 required' }, { status: 400 })
   }
 
   const admin = createAdmin()
