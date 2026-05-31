@@ -114,7 +114,7 @@ export function Footer() {
             <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram" style={{ color: C.creamFaint }}>
               <InstagramIcon />
             </a>
-            <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '918140081461'}`} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" style={{ color: C.creamFaint }}>
+            <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '919909538890'}`} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" style={{ color: C.creamFaint }}>
               <WhatsAppIcon />
             </a>
           </div>
