@@ -9,6 +9,9 @@ interface Settings {
   shipping_cost?: number
 }
 
+const F = { fontFamily: "'Raleway',sans-serif" }
+const inputStyle = { width: '100%', padding: '12px 16px', border: '1px solid rgba(21,20,15,0.22)', background: 'transparent', fontFamily: "'Raleway',sans-serif", fontSize: 13, color: '#15140f', outline: 'none' }
+
 export default function AdminSettings() {
   const [settings, setSettings] = useState<Settings>({})
   const [loading, setLoading] = useState(true)
@@ -31,8 +34,6 @@ export default function AdminSettings() {
     setTimeout(() => setSaved(false), 2000)
   }
 
-  const F = { fontFamily: "'Raleway',sans-serif" }
-  const inputStyle = { width: '100%', padding: '12px 16px', border: '1px solid rgba(21,20,15,0.22)', background: 'transparent', ...F, fontSize: 13, color: '#15140f', outline: 'none' }
 
   return (
     <div>

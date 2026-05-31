@@ -54,14 +54,14 @@ export default async function AdminDashboard() {
               <div key={o.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', borderBottom: '1px solid rgba(21,20,15,0.08)' }}>
                 <div>
                   <div style={{ fontFamily: "'Raleway',sans-serif", fontSize: 12, color: '#15140f', fontWeight: 600 }}>
-                    {o.shipping_name || 'Guest'} — #{(o.id as string).slice(0,8).toUpperCase()}
+                    {o.shipping_name || 'Guest'} — #{o.id.slice(0,8).toUpperCase()}
                   </div>
                   <div style={{ fontFamily: "'Raleway',sans-serif", fontSize: 11, color: 'rgba(21,20,15,0.5)', marginTop: 2 }}>
-                    {new Date(o.created_at as string).toLocaleDateString('en-IN')}
+                    {new Date(o.created_at).toLocaleDateString('en-IN')}
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                  <span style={{ color: STATUS_COLOR[o.status as string] ?? '#374151', fontFamily: "'Raleway',sans-serif", fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: 700 }}>{o.status as string}</span>
+                  <span style={{ color: STATUS_COLOR[o.status] ?? '#374151', fontFamily: "'Raleway',sans-serif", fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: 700 }}>{o.status}</span>
                   <span style={{ fontFamily: "'Prata',serif", fontSize: 16, color: '#15140f' }}>₹{Number(o.total).toLocaleString('en-IN')}</span>
                 </div>
               </div>

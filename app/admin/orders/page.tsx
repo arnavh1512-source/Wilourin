@@ -31,17 +31,22 @@ const STATUS_BG: Record<string, string> = {
   shipped: '#e0f2fe', delivered: '#dcfce7', cancelled: '#fee2e2',
 }
 
+const F = { fontFamily: "'Raleway',sans-serif" }
+
 export default function AdminOrders() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [filter, setFilter] = useState('')
   const [expanded, setExpanded] = useState<string | null>(null)
   const [updating, setUpdating] = useState<string | null>(null)
 
   const load = async (status = '') => {
     setLoading(true)
+    setError('')
     const qs = status ? `?status=${status}` : ''
     const res = await fetch(`/api/admin/orders${qs}`)
+    if (!res.ok) { setError('Failed to load orders.'); setLoading(false); return }
     const json = await res.json()
     setOrders(json.data ?? [])
     setLoading(false)
@@ -56,7 +61,6 @@ export default function AdminOrders() {
     setOrders(os => os.map(o => o.id === id ? { ...o, status } : o))
   }
 
-  const F = { fontFamily: "'Raleway',sans-serif" }
   const fmt = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' })
 
   return (
@@ -76,6 +80,8 @@ export default function AdminOrders() {
 
       {loading ? (
         <div style={{ ...F, fontSize: 13, color: 'rgba(21,20,15,0.4)', textAlign: 'center', padding: 60 }}>Loading…</div>
+      ) : error ? (
+        <div style={{ ...F, fontSize: 13, color: '#dc2626', textAlign: 'center', padding: 60 }}>{error}</div>
       ) : orders.length === 0 ? (
         <div style={{ ...F, fontSize: 13, color: 'rgba(21,20,15,0.4)', textAlign: 'center', padding: 60 }}>No orders found.</div>
       ) : (

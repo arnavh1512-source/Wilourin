@@ -1,5 +1,3 @@
-const FALLBACK_VIDEO = 'https://www.image2url.com/r2/default/videos/1777724136438-04a54608-2177-459d-8508-28da8ae9a31a.mp4'
-
 function Corner({ pos }: { pos: 'tl' | 'tr' | 'bl' | 'br' }) {
   const positions: Record<string, React.CSSProperties> = {
     tl: { top: 12, left: 12 },
@@ -20,19 +18,20 @@ function Corner({ pos }: { pos: 'tl' | 'tr' | 'bl' | 'br' }) {
 }
 
 export function Hero({ videoUrl }: { videoUrl?: string | null }) {
-  const src = videoUrl || FALLBACK_VIDEO
   return (
     <section style={{ position: 'relative', overflow: 'hidden', background: '#0a0a0a' }}>
       <div style={{
         position: 'relative', width: '100%',
         minHeight: 'calc(100vh - 60px)', overflow: 'hidden',
       }} className="hero-min">
-        <video
-          key={src}
-          src={src}
-          autoPlay muted loop playsInline preload="metadata"
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-        />
+        {videoUrl && (
+          <video
+            key={videoUrl}
+            src={videoUrl}
+            autoPlay muted loop playsInline preload="metadata"
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          />
+        )}
         <Corner pos="tl" /><Corner pos="tr" /><Corner pos="bl" /><Corner pos="br" />
         <div style={{
           position: 'absolute', bottom: 0, left: 0, right: 0, height: '30%',

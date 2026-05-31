@@ -10,14 +10,19 @@ interface Customer {
   created_at: string
 }
 
+const F = { fontFamily: "'Raleway',sans-serif" }
+
 export default function AdminCustomers() {
   const [customers, setCustomers] = useState<Customer[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [updating, setUpdating] = useState<string | null>(null)
 
   const load = async () => {
     setLoading(true)
+    setError('')
     const res = await fetch('/api/admin/customers')
+    if (!res.ok) { setError('Failed to load customers.'); setLoading(false); return }
     const json = await res.json()
     setCustomers(json.data ?? [])
     setLoading(false)
@@ -34,7 +39,7 @@ export default function AdminCustomers() {
     setCustomers(cs => cs.map(c => c.id === id ? { ...c, role: newRole } : c))
   }
 
-  const F = { fontFamily: "'Raleway',sans-serif" }
+
 
   const admins = customers.filter(c => c.role === 'admin')
   const regular = customers.filter(c => c.role !== 'admin')
@@ -48,6 +53,8 @@ export default function AdminCustomers() {
 
       {loading ? (
         <div style={{ ...F, fontSize: 13, color: 'rgba(21,20,15,0.4)', textAlign: 'center', padding: 60 }}>Loading…</div>
+      ) : error ? (
+        <div style={{ ...F, fontSize: 13, color: '#dc2626', textAlign: 'center', padding: 60 }}>{error}</div>
       ) : (
         <>
           {admins.length > 0 && (
@@ -72,7 +79,7 @@ export default function AdminCustomers() {
 }
 
 function CustomerTable({ customers, onToggle, updating }: { customers: Customer[]; onToggle: (id: string, role: string) => void; updating: string | null }) {
-  const F = { fontFamily: "'Raleway',sans-serif" }
+
   return (
     <div style={{ background: '#fff', border: '1px solid rgba(21,20,15,0.12)' }}>
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', padding: '10px 20px', borderBottom: '1px solid rgba(21,20,15,0.1)', ...F, fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(21,20,15,0.45)' }}>
