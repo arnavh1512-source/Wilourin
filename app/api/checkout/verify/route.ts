@@ -43,6 +43,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to verify payment with Razorpay' }, { status: 502 })
   }
 
+  // Pre-verify all stocks BEFORE confirming the order
+  const { data: orderItems } = await admin.from('order_items').select('variant_id, quantity').eq('order_id', orderId)
+  for (const item of orderItems ?? []) {
+    if (item.variant_id) {
+      const { data: variant } = await admin.from('product_variants').select('stock_qty').eq('id', item.variant_id).single()
+      if (!variant || variant.stock_qty < item.quantity) {
+        return NextResponse.json({ error: 'Stock changed during payment. Please retry or contact support.' }, { status: 409 })
+      }
+    }
+  }
+
   // Atomic update: only confirm if still pending (prevents race conditions + replay)
   const { data: updated } = await admin
     .from('orders')
@@ -56,17 +67,6 @@ export async function POST(req: NextRequest) {
     const { data: existing } = await admin.from('orders').select('status').eq('id', orderId).single()
     if (existing?.status === 'confirmed') return NextResponse.json({ success: true })
     return NextResponse.json({ error: 'Order cannot be confirmed' }, { status: 409 })
-  }
-
-  // Pre-verify all stocks before decrementing any (prevents partial decrements)
-  const { data: orderItems } = await admin.from('order_items').select('variant_id, quantity').eq('order_id', orderId)
-  for (const item of orderItems ?? []) {
-    if (item.variant_id) {
-      const { data: variant } = await admin.from('product_variants').select('stock_qty').eq('id', item.variant_id).single()
-      if (!variant || variant.stock_qty < item.quantity) {
-        return NextResponse.json({ error: 'Stock changed during payment. Please contact support.' }, { status: 409 })
-      }
-    }
   }
 
   for (const item of orderItems ?? []) {
