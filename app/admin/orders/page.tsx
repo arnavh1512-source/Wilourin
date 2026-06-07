@@ -57,8 +57,9 @@ export default function AdminOrders() {
 
   const updateStatus = async (id: string, status: string) => {
     setUpdating(id)
-    await fetch('/api/admin/orders', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, status }) })
+    const res = await fetch('/api/admin/orders', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, status }) })
     setUpdating(null)
+    if (!res.ok) { alert('Failed to update status'); return }
     setOrders(os => os.map(o => o.id === id ? { ...o, status } : o))
   }
 
