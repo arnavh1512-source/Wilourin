@@ -81,7 +81,9 @@ export function Nav() {
 
           {/* Center — Logo */}
           <Link href="/" style={{ display: 'flex', justifyContent: 'center' }}>
-            <Logo height={120} className="logo-nav" />
+            <div className="nav-logo-wrap">
+              <Logo height={120} />
+            </div>
           </Link>
 
           {/* Right */}
@@ -117,10 +119,11 @@ export function Nav() {
         )}
 
         <style>{`
-          .logo-nav { height: 120px; width: auto; }
+          .nav-logo-wrap { height: 120px; }
+          .nav-logo-wrap img { height: 100% !important; width: auto !important; }
           @media (max-width: 700px) {
             nav > div:first-child { padding: 12px 16px !important; }
-            .logo-nav { height: 40px !important; }
+            .nav-logo-wrap { height: 40px; }
           }
         `}</style>
       </nav>
