@@ -18,8 +18,8 @@ export default function ContactPage() {
 
         <section style={{ marginBottom: 32 }}>
           <h2 style={{ fontFamily: "'Prata',serif", fontSize: 18, marginBottom: 12 }}>Customer Support</h2>
-          <p style={{ fontFamily: "'Raleway',sans-serif" }}>Email: <strong>support@wilourin.com</strong></p>
-          <p style={{ fontFamily: "'Raleway',sans-serif" }}>Phone / WhatsApp: <strong>+91 9909538890</strong></p>
+          <p>Email: <strong>support@wilourin.com</strong></p>
+          <p>Phone / WhatsApp: <strong>+91 9909538890</strong></p>
         </section>
 
         <section style={{ marginBottom: 32 }}>
