@@ -81,7 +81,7 @@ export function Nav() {
 
           {/* Center — Logo */}
           <Link href="/" style={{ display: 'flex', justifyContent: 'center' }}>
-            <Logo height={50} />
+            <Logo height={120} className="logo-nav" />
           </Link>
 
           {/* Right */}
@@ -116,7 +116,13 @@ export function Nav() {
           </form>
         )}
 
-        <style>{`@media (max-width: 700px) { nav > div:first-child { padding: 12px 16px !important; } }`}</style>
+        <style>{`
+          .logo-nav { height: 120px; width: auto; }
+          @media (max-width: 700px) {
+            nav > div:first-child { padding: 12px 16px !important; }
+            .logo-nav { height: 40px !important; }
+          }
+        `}</style>
       </nav>
     </>
   )

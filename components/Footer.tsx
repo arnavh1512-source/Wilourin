@@ -105,7 +105,7 @@ export function Footer() {
       {/* Bottom */}
       <div className="footer-bottom" style={{ paddingTop: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 30 }}>
         <div style={{ filter: 'brightness(0) invert(1)' }}>
-          <Logo height={120} />
+          <Logo height={120} className="logo-footer" />
         </div>
         <div style={{ fontFamily: "'Raleway',sans-serif", fontSize: 14, letterSpacing: 2, color: C.creamFaint, textTransform: 'uppercase', fontWeight: 600, textAlign: 'right', lineHeight: 1.8 }}>
           © 2026 WILOURIN STUDIO PVT LTD<br />
@@ -122,10 +122,12 @@ export function Footer() {
       </div>
 
       <style>{`
+        .logo-footer { height: 120px; width: auto; }
         @media (max-width: 700px) {
           .footer-section { padding: 60px 20px 32px !important; }
           .footer-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
           .footer-bottom { flex-direction: column !important; align-items: flex-start !important; gap: 16px !important; }
+          .logo-footer { height: 40px !important; }
         }
       `}</style>
     </footer>
