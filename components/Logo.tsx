@@ -13,7 +13,7 @@ export function Logo({ height = 40, className }: LogoProps) {
       height={height}
       width={height * 4}
       className={className}
-      style={{ objectFit: 'contain', width: 'auto', display: 'block', margin: '0 auto' }}
+      style={{ objectFit: 'contain', width: 'auto', height: height, display: 'block', margin: '0 auto' }}
       priority
     />
   )
