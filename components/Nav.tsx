@@ -117,15 +117,7 @@ export function Nav() {
           </form>
         )}
 
-        <style>{`
-          .logo-mob { display: none; }
-          .logo-desk { display: inline-flex; }
-          @media (max-width: 700px) {
-            nav > div:first-child { padding: 12px 16px !important; }
-            .logo-desk { display: none; }
-            .logo-mob { display: inline-flex; }
-          }
-        `}</style>
+        <style>{`@media (max-width: 700px) { nav > div:first-child { padding: 12px 16px !important; } }`}</style>
       </nav>
     </>
   )
