@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import crypto from 'crypto'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { rateLimit } from '@/lib/rateLimit'
 
 const MAX_SIZE = 5 * 1024 * 1024 // 5 MB
 
@@ -16,6 +18,8 @@ async function requireAdmin() {
 export async function POST(req: NextRequest) {
   const user = await requireAdmin()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!await rateLimit(`admin:upload:${user.id}`, 15, 60_000))
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
 
   const formData = await req.formData()
   const file = formData.get('file') as File | null
@@ -29,7 +33,7 @@ export async function POST(req: NextRequest) {
   }
 
   const ext = file.name.split('.').pop()
-  const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+  const fileName = `${Date.now()}-${crypto.randomUUID()}.${ext}`
 
   const admin = createAdminClient()
   const bytes = await file.arrayBuffer()

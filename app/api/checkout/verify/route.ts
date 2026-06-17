@@ -2,8 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import Razorpay from 'razorpay'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { rateLimit } from '@/lib/rateLimit'
 
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get('x-real-ip') ?? req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+  if (!await rateLimit(`verify:${ip}`, 10, 60_000)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+  }
+
   const { orderId, razorpay_order_id, razorpay_payment_id, razorpay_signature } = await req.json()
   if (!orderId || !razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 })

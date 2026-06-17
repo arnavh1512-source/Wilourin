@@ -17,7 +17,10 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     .order('created_at', { ascending: false })
     .limit(search?.trim() ? 20 : 6)
 
-  if (search?.trim()) query = query.ilike('name', `%${search.trim()}%`)
+  if (search?.trim()) {
+    const escaped = search.trim().replace(/[%_\\]/g, '\\$&')
+    query = query.ilike('name', `%${escaped}%`)
+  }
 
   const [{ data: products }, { data: settings }] = await Promise.all([
     query,

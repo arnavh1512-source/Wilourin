@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient as createAdmin } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { rateLimit } from '@/lib/rateLimit'
 
 async function requireAdmin() {
   const supabase = await createClient()
@@ -27,6 +28,8 @@ export async function GET() {
 export async function PATCH(req: NextRequest) {
   const user = await requireAdmin()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!await rateLimit(`admin:stock:${user.id}`, 30, 60_000))
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
 
   const { variantId, stock_qty } = await req.json()
   if (!variantId || typeof stock_qty !== 'number' || stock_qty < 0 || stock_qty > 100000) {

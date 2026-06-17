@@ -52,8 +52,8 @@ export function Nav() {
 
   const handleUser = async () => {
     const supabase = createClient()
-    const { data: { session } } = await supabase.auth.getSession()
-    router.push(session ? '/account' : '/login')
+    const { data: { user } } = await supabase.auth.getUser()
+    router.push(user ? '/account' : '/login')
   }
 
   const handleSearch = (e: React.FormEvent) => {

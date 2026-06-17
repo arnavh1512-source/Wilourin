@@ -18,8 +18,12 @@ function SuccessContent() {
 
   useEffect(() => {
     if (!id) { setLoading(false); return }
-    createClient().from('orders').select('id, status, total, created_at').eq('id', id).single()
-      .then(({ data }) => { setOrder(data); setLoading(false) })
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) { setLoading(false); return }
+      supabase.from('orders').select('id, status, total, created_at').eq('id', id).eq('user_id', user.id).single()
+        .then(({ data }) => { setOrder(data); setLoading(false) })
+    })
   }, [id])
 
   const header = (

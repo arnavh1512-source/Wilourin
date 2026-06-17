@@ -1,6 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { createAdminClient as createAdmin } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { rateLimit } from '@/lib/rateLimit'
+
+const productSchema = z.object({
+  name: z.string().min(1).max(200),
+  description: z.string().max(2000).optional().default(''),
+  price: z.number().positive().max(999999),
+  original_price: z.number().positive().max(999999).nullable().optional(),
+  category: z.string().max(100).nullable().optional(),
+  is_published: z.boolean().optional().default(false),
+  images: z.array(z.string().url()).max(20).optional().default([]),
+  variants: z.array(z.object({
+    size: z.string().min(1).max(10),
+    stock_qty: z.number().int().min(0).max(100000).optional().default(0),
+  })).max(20).optional().default([]),
+})
+
+const patchSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().min(1).max(200).optional(),
+  description: z.string().max(2000).optional(),
+  price: z.number().positive().max(999999).optional(),
+  original_price: z.number().positive().max(999999).nullable().optional(),
+  category: z.string().max(100).nullable().optional(),
+  badge: z.string().max(100).nullable().optional(),
+  is_published: z.boolean().optional(),
+  images: z.array(z.string().url()).max(20).optional(),
+  variants: z.array(z.object({
+    size: z.string().min(1).max(10),
+    stock_qty: z.number().int().min(0).max(100000).optional().default(0),
+  })).max(20).optional(),
+})
 
 async function requireAdmin() {
   const supabase = await createClient()
@@ -43,11 +75,13 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const user = await requireAdmin()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!await rateLimit(`admin:products:${user.id}`, 20, 60_000))
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
 
-  const body = await req.json()
-  const { name, description, price, original_price, category, is_published, images = [], variants = [] } = body
+  const parsed = productSchema.safeParse(await req.json())
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Invalid input' }, { status: 400 })
 
-  if (!name || !price) return NextResponse.json({ error: 'name and price are required' }, { status: 400 })
+  const { name, description, price, original_price, category, is_published, images, variants } = parsed.data
 
   const admin = createAdmin()
   const slug = await uniqueSlug(toSlug(name), admin)
@@ -78,14 +112,15 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   const user = await requireAdmin()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!await rateLimit(`admin:products:${user.id}`, 20, 60_000))
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
 
-  const body = await req.json()
-  const { id, variants, images, ...rawFields } = body
-  if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
+  const parsed = patchSchema.safeParse(await req.json())
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Invalid input' }, { status: 400 })
 
-  // Convert empty strings to null so they don't overwrite existing DB values with ''
+  const { id, variants, images, ...fields } = parsed.data
   const productFields = Object.fromEntries(
-    Object.entries(rawFields).map(([k, v]) => [k, v === '' ? null : v])
+    Object.entries(fields).map(([k, v]) => [k, v === '' ? null : v])
   )
 
   const admin = createAdmin()
@@ -117,6 +152,8 @@ export async function PATCH(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   const user = await requireAdmin()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!await rateLimit(`admin:products:${user.id}`, 20, 60_000))
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
 
   const { id } = await req.json()
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
