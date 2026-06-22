@@ -22,14 +22,8 @@ const InstagramIcon = () => (
   </svg>
 )
 
-const STUDIO = [
-  { label: 'About',           href: '/about' },
-  { label: 'Provenance',      href: '#' },
-  { label: 'Mending service', href: '#' },
-  { label: 'Stockists',       href: '#' },
-  { label: 'Press',           href: 'mailto:press@wilourin.com' },
-]
 const HELP = [
+  { label: 'About',              href: '/about' },
   { label: 'Contact',            href: '/contact' },
   { label: 'Returns & Exchange', href: '/returns' },
   { label: 'Size guide',         href: '/size-guide' },
@@ -99,34 +93,20 @@ export function Footer() {
         </a>
       </div>
 
-      {/* Links — Studio + Help in 2-column grid */}
+      {/* Links */}
       <div className="footer-links" style={{
-        display: 'grid', gridTemplateColumns: '1fr 1fr',
         borderTop: `1px solid ${C.creamLine}`,
-        margin: '0 40px', padding: '40px 0',
+        margin: '0 40px', padding: '40px 0', textAlign: 'center',
       }}>
-        <div style={{ borderRight: `1px solid ${C.creamLine}` }}>
-          <div style={{ ...F, fontSize: 10, letterSpacing: 2.5, color: C.creamFaint, textTransform: 'uppercase', fontWeight: 600, marginBottom: 20, textAlign: 'center' }}>
-            — Studio
-          </div>
-          {STUDIO.map(link => (
-            <Link key={link.label} href={link.href} style={{
-              display: 'block', textAlign: 'center', padding: '10px 0',
-              ...F, fontSize: 14, color: C.cream, textDecoration: 'none',
-            }}>{link.label}</Link>
-          ))}
+        <div style={{ ...F, fontSize: 10, letterSpacing: 2.5, color: C.creamFaint, textTransform: 'uppercase', fontWeight: 600, marginBottom: 20 }}>
+          — Help
         </div>
-        <div>
-          <div style={{ ...F, fontSize: 10, letterSpacing: 2.5, color: C.creamFaint, textTransform: 'uppercase', fontWeight: 600, marginBottom: 20, textAlign: 'center' }}>
-            — Help
-          </div>
-          {HELP.map(link => (
-            <Link key={link.label} href={link.href} style={{
-              display: 'block', textAlign: 'center', padding: '10px 0',
-              ...F, fontSize: 14, color: C.cream, textDecoration: 'none',
-            }}>{link.label}</Link>
-          ))}
-        </div>
+        {HELP.map(link => (
+          <Link key={link.label} href={link.href} style={{
+            display: 'block', textAlign: 'center', padding: '10px 0',
+            ...F, fontSize: 14, color: C.cream, textDecoration: 'none',
+          }}>{link.label}</Link>
+        ))}
       </div>
 
       {/* Bottom — small logo + subtle copyright */}
