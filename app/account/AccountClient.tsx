@@ -103,7 +103,13 @@ export function AccountClient({ user, profile, orders }: Props) {
       <div style={{ borderBottom: `1px solid ${C.marbleLine}`, padding: '20px 40px', display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center' }}>
         <div />
         <a href="/" style={{ display: 'flex', justifyContent: 'center' }}><Logo height={40} /></a>
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+          {profile?.role === 'admin' && (
+            <a href="/admin" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: C.forestDark, color: C.cream, border: 'none', padding: '8px 20px', fontFamily: "'Raleway',sans-serif", fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', cursor: 'pointer', textDecoration: 'none', fontWeight: 600 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+              Admin
+            </a>
+          )}
           <button onClick={signOut} style={{ background: 'transparent', border: `1px solid ${C.marbleLine}`, padding: '8px 20px', fontFamily: "'Raleway',sans-serif", fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', cursor: 'pointer', color: C.inkFaint }}>
             Sign out
           </button>
