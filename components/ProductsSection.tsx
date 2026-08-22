@@ -45,8 +45,10 @@ function ProductCard({ p }: { p: Product }) {
 
   const availableSizes = useMemo(() => {
     if (variants.length === 0) return []
-    const variantSizes = new Set(variants.map(v => v.size))
-    return SIZE_ORDER.filter(size => variantSizes.has(size))
+    const variantSizes = variants.map(v => v.size)
+    const known = SIZE_ORDER.filter(s => variantSizes.includes(s))
+    const custom = variantSizes.filter(s => !SIZE_ORDER.includes(s)).sort()
+    return [...known, ...custom]
   }, [variants])
 
   const isAvailable = (size: string) => {
@@ -74,30 +76,38 @@ function ProductCard({ p }: { p: Product }) {
 
   if (!img1) return null
 
+  const href = p.slug ? `/products/${p.slug}` : undefined
+
   const inner = (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       <div
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
-        style={{
-          position: 'relative', aspectRatio: '2/3',
-          background: '#fafaf7', border: `1px solid ${C.marbleLine}`,
-          overflow: 'hidden',
-          boxShadow: hover ? '0 30px 60px -30px rgba(13,40,24,0.4)' : '0 10px 30px -20px rgba(13,40,24,0.15)',
-          transition: 'box-shadow 0.4s, transform 0.4s',
-          transform: hover ? 'translateY(-4px)' : 'translateY(0)',
-        }}
+        style={{ position: 'relative', aspectRatio: '2/3', background: '#fafaf7', border: `1px solid ${C.marbleLine}`, overflow: 'hidden', boxShadow: hover ? '0 30px 60px -30px rgba(13,40,24,0.4)' : '0 10px 30px -20px rgba(13,40,24,0.15)', transition: 'box-shadow 0.4s, transform 0.4s', transform: hover ? 'translateY(-4px)' : 'translateY(0)' }}
       >
-        <Image src={img1} alt={p.name} fill sizes="(max-width:700px) 100vw, 50vw"
-          style={{ objectFit: 'cover', objectPosition: 'top center', transform: hover && !img2 ? 'scale(1.04)' : 'scale(1)', transition: 'transform 1.2s cubic-bezier(.2,.8,.2,1)' }} />
-        {img2 && (
-          <Image src={img2} alt={p.name} fill sizes="(max-width:700px) 100vw, 50vw"
-            style={{ objectFit: 'cover', objectPosition: 'top center', opacity: hover ? 1 : 0, transition: 'opacity 0.45s ease' }} />
+        {href ? (
+          <Link href={href} style={{ display: 'block', width: '100%', height: '100%' }}>
+            <Image src={img1} alt={p.name} fill sizes="(max-width:700px) 100vw, 50vw"
+              style={{ objectFit: 'cover', objectPosition: 'top center', transform: hover && !img2 ? 'scale(1.04)' : 'scale(1)', transition: 'transform 1.2s cubic-bezier(.2,.8,.2,1)' }} />
+            {img2 && (
+              <Image src={img2} alt={p.name} fill sizes="(max-width:700px) 100vw, 50vw"
+                style={{ objectFit: 'cover', objectPosition: 'top center', opacity: hover ? 1 : 0, transition: 'opacity 0.45s ease' }} />
+            )}
+          </Link>
+        ) : (
+          <>
+            <Image src={img1} alt={p.name} fill sizes="(max-width:700px) 100vw, 50vw"
+              style={{ objectFit: 'cover', objectPosition: 'top center', transform: hover && !img2 ? 'scale(1.04)' : 'scale(1)', transition: 'transform 1.2s cubic-bezier(.2,.8,.2,1)' }} />
+            {img2 && (
+              <Image src={img2} alt={p.name} fill sizes="(max-width:700px) 100vw, 50vw"
+                style={{ objectFit: 'cover', objectPosition: 'top center', opacity: hover ? 1 : 0, transition: 'opacity 0.45s ease' }} />
+            )}
+          </>
         )}
-        <div style={{ position: 'absolute', top: 10, left: 10, width: 12, height: 12, borderTop: '1px solid rgba(232,228,216,0.6)', borderLeft: '1px solid rgba(232,228,216,0.6)' }} />
+        <div style={{ position: 'absolute', top: 10, left: 10, width: 12, height: 12, borderTop: '1px solid rgba(232,228,216,0.6)', borderLeft: '1px solid rgba(232,228,216,0.6)', pointerEvents: 'none' }} />
         <button
-          onClick={e => { e.preventDefault(); e.stopPropagation(); toggle({ id: p.id, name: p.name, price: p.price, img: img1, slug: p.slug }) }}
-          style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(244,241,236,0.85)', border: 'none', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backdropFilter: 'blur(4px)' }}
+          onClick={() => toggle({ id: p.id, name: p.name, price: p.price, img: img1, slug: p.slug })}
+          style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(244,241,236,0.85)', border: 'none', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backdropFilter: 'blur(4px)', zIndex: 1 }}
           aria-label={isLiked ? 'Remove from saved' : 'Save'}
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill={isLiked ? '#0d2818' : 'none'} stroke="#0d2818" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -105,12 +115,18 @@ function ProductCard({ p }: { p: Product }) {
           </svg>
         </button>
         {p.badge && (
-          <div style={{ position: 'absolute', bottom: 14, left: 14, background: C.forestDark, color: C.cream, padding: '4px 10px', fontFamily: "'Raleway',sans-serif", fontSize: 9, letterSpacing: 2, textTransform: 'uppercase' }}>{p.badge}</div>
+          <div style={{ position: 'absolute', bottom: 14, left: 14, background: C.forestDark, color: C.cream, padding: '4px 10px', fontFamily: "'Raleway',sans-serif", fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', pointerEvents: 'none' }}>{p.badge}</div>
         )}
       </div>
 
       <div style={{ paddingTop: 20, display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <div style={{ fontFamily: "'Prata',serif", fontSize: 22, color: C.marbleInk, lineHeight: 1.15, letterSpacing: '-0.01em' }}>{p.name}</div>
+        {href ? (
+          <Link href={href} style={{ textDecoration: 'none' }}>
+            <div style={{ fontFamily: "'Prata',serif", fontSize: 22, color: C.marbleInk, lineHeight: 1.15, letterSpacing: '-0.01em' }}>{p.name}</div>
+          </Link>
+        ) : (
+          <div style={{ fontFamily: "'Prata',serif", fontSize: 22, color: C.marbleInk, lineHeight: 1.15, letterSpacing: '-0.01em' }}>{p.name}</div>
+        )}
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
           <span style={{ fontFamily: "'Prata',serif", fontSize: 16, color: C.marbleInk }}>{fmt.format(p.price)}</span>
           {p.original_price && (
@@ -137,7 +153,12 @@ function ProductCard({ p }: { p: Product }) {
             </div>
           </div>
         ) : (
-          <button onClick={toggleSize} style={{ marginTop: 10, padding: '13px 0', background: added ? C.forestDark : hover ? C.forestDark : 'transparent', color: added ? C.cream : hover ? C.cream : C.marbleInk, border: `1px solid ${C.marbleLine}`, fontFamily: "'Raleway',sans-serif", fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', fontWeight: 600, textAlign: 'center', transition: 'background 0.25s, color 0.25s', cursor: 'pointer' }}>
+          <button onClick={e => {
+            if (availableSizes.length > 0) { toggleSize(e); return }
+            e.preventDefault(); e.stopPropagation()
+            add({ id: p.id, name: p.name, img: img1 ?? '', price: p.price, size: 'One Size', quantity: 1 })
+            setAdded(true); setTimeout(() => setAdded(false), 2000)
+          }} style={{ marginTop: 10, padding: '13px 0', background: added ? C.forestDark : hover ? C.forestDark : 'transparent', color: added ? C.cream : hover ? C.cream : C.marbleInk, border: `1px solid ${C.marbleLine}`, fontFamily: "'Raleway',sans-serif", fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', fontWeight: 600, textAlign: 'center', transition: 'background 0.25s, color 0.25s', cursor: 'pointer' }}>
             {added ? '✓ Added to Bag' : availableSizes.length > 0 ? 'Select Size →' : 'Add to Bag →'}
           </button>
         )}
@@ -145,7 +166,6 @@ function ProductCard({ p }: { p: Product }) {
     </div>
   )
 
-  if (p.slug) return <Link href={`/products/${p.slug}`} style={{ textDecoration: 'none' }}>{inner}</Link>
   return inner
 }
 

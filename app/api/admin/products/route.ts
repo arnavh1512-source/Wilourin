@@ -97,13 +97,21 @@ export async function POST(req: NextRequest) {
     const { error: imgErr } = await admin.from('product_images').insert(
       images.map((url: string, i: number) => ({ product_id: product.id, url, is_primary: i === 0, display_order: i }))
     )
-    if (imgErr) return NextResponse.json({ error: `Product saved but image insert failed: ${imgErr.message}` }, { status: 500 })
+    if (imgErr) {
+      await admin.from('products').delete().eq('id', product.id)
+      return NextResponse.json({ error: `Failed to create images: ${imgErr.message}` }, { status: 500 })
+    }
   }
 
   if (variants.length) {
-    await admin.from('product_variants').insert(
+    const { error: varErr } = await admin.from('product_variants').insert(
       variants.map((v: { size: string; stock_qty: number }) => ({ product_id: product.id, size: v.size, stock_qty: v.stock_qty ?? 0 }))
     )
+    if (varErr) {
+      await admin.from('product_images').delete().eq('product_id', product.id)
+      await admin.from('products').delete().eq('id', product.id)
+      return NextResponse.json({ error: `Failed to create variants: ${varErr.message}` }, { status: 500 })
+    }
   }
 
   return NextResponse.json({ data: product }, { status: 201 })
@@ -128,21 +136,24 @@ export async function PATCH(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   if (variants) {
-    await admin.from('product_variants').delete().eq('product_id', id)
+    const { error: delVarErr } = await admin.from('product_variants').delete().eq('product_id', id)
+    if (delVarErr) return NextResponse.json({ error: `Failed to clear variants: ${delVarErr.message}` }, { status: 500 })
     if (variants.length) {
-      await admin.from('product_variants').insert(
+      const { error: varErr } = await admin.from('product_variants').insert(
         variants.map((v: { size: string; stock_qty: number }) => ({ product_id: id, size: v.size, stock_qty: v.stock_qty ?? 0 }))
       )
+      if (varErr) return NextResponse.json({ error: `Failed to update variants: ${varErr.message}` }, { status: 500 })
     }
   }
 
   if (images) {
-    await admin.from('product_images').delete().eq('product_id', id)
+    const { error: delImgErr } = await admin.from('product_images').delete().eq('product_id', id)
+    if (delImgErr) return NextResponse.json({ error: `Failed to clear images: ${delImgErr.message}` }, { status: 500 })
     if (images.length) {
       const { error: imgErr } = await admin.from('product_images').insert(
         images.map((url: string, i: number) => ({ product_id: id, url, is_primary: i === 0, display_order: i }))
       )
-      if (imgErr) return NextResponse.json({ error: `Product saved but image insert failed: ${imgErr.message}` }, { status: 500 })
+      if (imgErr) return NextResponse.json({ error: `Failed to update images: ${imgErr.message}` }, { status: 500 })
     }
   }
 
