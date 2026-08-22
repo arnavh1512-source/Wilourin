@@ -11,6 +11,7 @@ interface CartItem {
   price: number
   quantity: number
   size: string
+  customFit?: Record<string, number>
 }
 
 export async function POST(req: NextRequest) {
@@ -68,7 +69,7 @@ export async function POST(req: NextRequest) {
     }
 
     serverTotal += product.price * item.quantity
-    verifiedItems.push({ id: item.id, variantId: item.variantId, name: product.name, price: product.price, quantity: item.quantity, size: item.size })
+    verifiedItems.push({ id: item.id, variantId: item.variantId, name: product.name, price: product.price, quantity: item.quantity, size: item.size, customFit: item.customFit })
   }
 
   // Total tamper check
@@ -107,6 +108,7 @@ export async function POST(req: NextRequest) {
       price:        it.price,
       quantity:     it.quantity,
       size:         it.size,
+      custom_fit:   it.customFit ?? null,
     }))
   )
 

@@ -18,8 +18,11 @@ export async function GET(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { searchParams } = new URL(req.url)
-  const page = parseInt(searchParams.get('page') ?? '1')
-  const limit = Math.min(parseInt(searchParams.get('limit') ?? '20'), 100)
+  const rawPage = parseInt(searchParams.get('page') ?? '1')
+  const rawLimit = parseInt(searchParams.get('limit') ?? '20')
+  if (isNaN(rawPage) || isNaN(rawLimit)) return NextResponse.json({ error: 'Invalid page or limit' }, { status: 400 })
+  const page = Math.max(1, rawPage)
+  const limit = Math.max(1, Math.min(rawLimit, 100))
   const status = searchParams.get('status')
   const from = (page - 1) * limit
 

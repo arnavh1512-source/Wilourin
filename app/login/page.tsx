@@ -80,7 +80,7 @@ export default function LoginPage() {
         </Suspense>
 
         <p style={{ fontFamily: "'Raleway',sans-serif", fontSize: 11, color: C.inkFaint, marginTop: 32, lineHeight: 1.6 }}>
-          By continuing, you agree to our terms of service.<br />
+          By continuing, you agree to our <a href="/terms" style={{ color: '#0d2818', textDecoration: 'underline' }}>terms of service</a>.<br />
           Your data is safe with us.
         </p>
       </div>

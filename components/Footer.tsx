@@ -34,6 +34,7 @@ const HELP = [
 export function Footer() {
   const [phone, setPhone] = useState('')
   const [ok, setOk] = useState(false)
+  const [err, setErr] = useState('')
 
   return (
     <footer id="archive" className="footer-section" style={{ background: C.forestDark, color: C.cream }}>
@@ -47,7 +48,14 @@ export function Footer() {
         </p>
 
         <form
-          onSubmit={(e) => { e.preventDefault(); if (phone.trim()) setOk(true) }}
+          onSubmit={(e) => {
+            e.preventDefault()
+            setErr('')
+            const digits = phone.replace(/[\s\-+]/g, '').replace(/^91/, '')
+            if (!/^[6-9]\d{9}$/.test(digits)) { setErr('Please enter a valid Indian mobile number'); return }
+            window.open(`https://wa.me/919909538890?text=${encodeURIComponent(`Hi Wilourin! I'd like to stay updated. My number: +91 ${digits}`)}`, '_blank')
+            setOk(true)
+          }}
           style={{ display: 'flex', gap: 0, maxWidth: 420, margin: '0 auto', alignItems: 'stretch' }}
         >
           <input
@@ -75,6 +83,7 @@ export function Footer() {
             {ok ? '✓ Added' : 'WhatsApp →'}
           </button>
         </form>
+        {err && <p style={{ ...F, fontSize: 12, color: '#f87171', marginTop: 8 }}>{err}</p>}
 
         {/* Instagram button */}
         <a

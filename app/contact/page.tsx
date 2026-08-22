@@ -24,7 +24,7 @@ export default function ContactPage() {
 
         <section style={{ marginBottom: 32 }}>
           <h2 style={{ fontFamily: "'Prata',serif", fontSize: 18, marginBottom: 12 }}>Business Hours</h2>
-          <p>Monday – Saturday<br />10:00 AM – 7:00 PM IST</p>
+          <p>Monday – Saturday<br />11:00 AM – 6:00 PM IST</p>
         </section>
 
         <section style={{ marginBottom: 32 }}>

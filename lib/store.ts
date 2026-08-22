@@ -36,7 +36,11 @@ export const useCartStore = create<CartStore>()(
       isOpen: false,
 
       add: (item) => set((s) => {
-        const existing = s.items.findIndex(i => i.id === item.id && i.size === item.size)
+        const fitKey = item.customFit ? JSON.stringify(Object.entries(item.customFit).sort()) : ''
+        const existing = s.items.findIndex(i =>
+          i.id === item.id && i.size === item.size &&
+          (i.customFit ? JSON.stringify(Object.entries(i.customFit).sort()) : '') === fitKey
+        )
         if (existing >= 0) {
           return {
             items: s.items.map((it, i) => i === existing ? { ...it, quantity: it.quantity + item.quantity } : it),
