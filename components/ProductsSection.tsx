@@ -41,7 +41,8 @@ function ProductCard({ p }: { p: Product }) {
 
   const img1 = sorted[0]?.url
   const img2 = sorted[1]?.url ?? null
-  const variants = p.product_variants ?? []
+  // Stable identity so the size memo below is not recomputed every render.
+  const variants = useMemo(() => p.product_variants ?? [], [p.product_variants])
 
   const availableSizes = useMemo(() => {
     if (variants.length === 0) return []
@@ -74,9 +75,30 @@ function ProductCard({ p }: { p: Product }) {
 
   const toggleSize = (e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); setSizeOpen(o => !o) }
 
-  if (!img1) return null
-
   const href = p.slug ? `/products/${p.slug}` : undefined
+
+  // A published product with no image still has to be reachable rather than
+  // silently vanishing from the grid (M6).
+  if (!img1) {
+    const placeholder = (
+      <div style={{ position: 'relative', aspectRatio: '2/3', background: '#efece5', border: `1px solid ${C.marbleLine}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ fontFamily: "'Raleway',sans-serif", fontSize: 9, letterSpacing: 2.5, textTransform: 'uppercase', color: 'rgba(21,20,15,0.35)' }}>
+          Image coming soon
+        </span>
+      </div>
+    )
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        {href ? <Link href={href} style={{ display: 'block' }}>{placeholder}</Link> : placeholder}
+        <div style={{ padding: '14px 2px 0' }}>
+          <div style={{ fontFamily: "'Prata',serif", fontSize: 17, color: C.marbleInk, lineHeight: 1.25 }}>{p.name}</div>
+          <div style={{ fontFamily: "'Prata',serif", fontSize: 15, color: C.marbleInk, marginTop: 6 }}>
+            {fmt.format(p.price)}
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   const inner = (
     <div style={{ display: 'flex', flexDirection: 'column' }}>

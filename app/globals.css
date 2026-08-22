@@ -9,6 +9,19 @@
 
   --font-prata:   'Prata', Georgia, serif;
   --font-raleway: 'Raleway', system-ui, sans-serif;
+
+  --color-td-primary: #2a6fdb;
+  --color-td-dark: #1a2332;
+  --color-td-green: #2fa36b;
+  --color-td-red: #e8553c;
+  --color-td-amber: #e0962f;
+  --color-td-bg: #f4f6fb;
+  --color-td-border: #e6eaf2;
+  --color-td-muted: #6b7689;
+  --color-td-subtle: #9aa4b6;
+  --color-td-text: #3a4456;
+  --color-td-pink: #d94f8a;
+  --color-td-teal: #3aa0c4;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -33,6 +46,19 @@ body {
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: #e8e4d8; }
 ::-webkit-scrollbar-thumb { background: #115511; border-radius: 2px; }
+
+@keyframes pop {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { scrollbar-width: none; }
 
 @keyframes revealUp {
   from { opacity: 0; transform: translateY(24px); }

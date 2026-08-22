@@ -1,6 +1,7 @@
 'use client'
 
 import { Suspense, useEffect, useState } from 'react'
+import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Logo } from '@/components/Logo'
@@ -17,18 +18,28 @@ function SuccessContent() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!id) { setLoading(false); return }
+    let active = true
+    const finish = (data: Order | null) => { if (active) { setOrder(data); setLoading(false) } }
     const supabase = createClient()
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) { setLoading(false); return }
-      supabase.from('orders').select('id, status, total, created_at').eq('id', id).eq('user_id', user.id).single()
-        .then(({ data }) => { setOrder(data); setLoading(false) })
-    })
+    supabase.auth.getUser()
+      .then(({ data: { user } }) => {
+        if (!id || !user) return null
+        return supabase
+          .from('orders')
+          .select('id, status, total, created_at')
+          .eq('id', id)
+          .eq('user_id', user.id)
+          .single()
+          .then(({ data }) => data as Order | null)
+      })
+      .then(finish)
+      .catch(() => finish(null))
+    return () => { active = false }
   }, [id])
 
   const header = (
     <div style={{ borderBottom: `1px solid ${C.marbleLine}`, padding: '20px 40px' }}>
-      <a href="/"><Logo height={36} /></a>
+      <Link href="/"><Logo height={36} /></Link>
     </div>
   )
 
@@ -39,8 +50,8 @@ function SuccessContent() {
       {header}
       <div style={{ maxWidth: 560, margin: '0 auto', padding: '80px 24px', textAlign: 'center' }}>
         <h1 style={{ fontFamily: "'Prata',serif", fontSize: 36, color: C.marbleInk, fontWeight: 400, margin: '0 0 16px' }}>Order Not Found</h1>
-        <p style={{ ...F, fontSize: 14, color: C.inkFaint, lineHeight: 1.7, marginBottom: 40 }}>We couldn't locate that order. Please check your email for confirmation details.</p>
-        <a href="/account" style={{ padding: '13px 28px', background: C.forestDark, color: C.cream, textDecoration: 'none', ...F, fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', fontWeight: 600 }}>View Orders</a>
+        <p style={{ ...F, fontSize: 14, color: C.inkFaint, lineHeight: 1.7, marginBottom: 40 }}>We could not locate that order. Please check your email for confirmation details.</p>
+        <Link href="/account" style={{ padding: '13px 28px', background: C.forestDark, color: C.cream, textDecoration: 'none', ...F, fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', fontWeight: 600 }}>View Orders</Link>
       </div>
     </div>
   )
@@ -62,8 +73,8 @@ function SuccessContent() {
           Order #{order.id.slice(0, 8).toUpperCase()} · {new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
         </p>
         <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <a href="/account" style={{ padding: '13px 28px', background: C.forestDark, color: C.cream, textDecoration: 'none', ...F, fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', fontWeight: 600 }}>View Orders</a>
-          <a href="/" style={{ padding: '13px 28px', background: 'transparent', border: `1px solid ${C.marbleLine}`, color: C.marbleInk, textDecoration: 'none', ...F, fontSize: 10, letterSpacing: 3, textTransform: 'uppercase' }}>Continue Shopping</a>
+          <Link href="/account" style={{ padding: '13px 28px', background: C.forestDark, color: C.cream, textDecoration: 'none', ...F, fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', fontWeight: 600 }}>View Orders</Link>
+          <Link href="/" style={{ padding: '13px 28px', background: 'transparent', border: `1px solid ${C.marbleLine}`, color: C.marbleInk, textDecoration: 'none', ...F, fontSize: 10, letterSpacing: 3, textTransform: 'uppercase' }}>Continue Shopping</Link>
         </div>
       </div>
     </div>

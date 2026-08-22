@@ -18,17 +18,17 @@ export default function AdminCustomers() {
   const [error, setError] = useState('')
   const [updating, setUpdating] = useState<string | null>(null)
 
-  const load = async () => {
-    setLoading(true)
-    setError('')
-    const res = await fetch('/api/admin/customers')
-    if (!res.ok) { setError('Failed to load customers.'); setLoading(false); return }
-    const json = await res.json()
-    setCustomers(json.data ?? [])
-    setLoading(false)
-  }
-
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    let active = true
+    fetch('/api/admin/customers')
+      .then(async res => {
+        if (!res.ok) throw new Error('Failed to load customers.')
+        return res.json()
+      })
+      .then(json => { if (active) { setCustomers(json.data ?? []); setLoading(false) } })
+      .catch(() => { if (active) { setError('Failed to load customers.'); setLoading(false) } })
+    return () => { active = false }
+  }, [])
 
   const toggleRole = async (id: string, currentRole: string) => {
     const newRole = currentRole === 'admin' ? 'customer' : 'admin'

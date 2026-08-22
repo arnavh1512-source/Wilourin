@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { FIT_KEYS, FIT_LABELS, type FitKey } from '@/lib/fitBounds'
 
 interface OrderItem {
   id: string
@@ -9,6 +10,15 @@ interface OrderItem {
   size: string
   quantity: number
   price: number
+  custom_fit?: Partial<Record<FitKey, number>> | null
+}
+
+/** Non-zero custom-fit adjustments, in a fixed order, ready for display (H4). */
+function fitEntries(fit: OrderItem['custom_fit']): Array<{ label: string; value: string }> {
+  if (!fit) return []
+  return FIT_KEYS
+    .filter(k => typeof fit[k] === 'number' && fit[k] !== 0)
+    .map(k => ({ label: FIT_LABELS[k], value: `${fit[k]! > 0 ? '+' : ''}${fit[k]} cm` }))
 }
 
 interface Order {
@@ -147,7 +157,9 @@ export default function OrderDetailPage() {
           {/* Items */}
           <section style={{ background: '#fff', border: '1px solid rgba(21,20,15,0.12)', padding: 24 }}>
             <div style={{ ...F, fontSize: 10, letterSpacing: 2.5, textTransform: 'uppercase', color: 'rgba(21,20,15,0.45)', marginBottom: 16 }}>Order Items</div>
-            {order.order_items.map((item, i) => (
+            {order.order_items.map((item, i) => {
+              const fit = fitEntries(item.custom_fit)
+              return (
               <div key={item.id ?? i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: 12, marginBottom: 12, borderBottom: i < order.order_items.length - 1 ? '1px solid rgba(21,20,15,0.06)' : 'none' }}>
                 <div>
                   <div style={{ ...F, fontSize: 13, color: '#15140f', fontWeight: 600 }}>{item.product_name}</div>
@@ -155,12 +167,26 @@ export default function OrderDetailPage() {
                     {item.size ? `Size: ${item.size}` : 'One size'}
                     {item.quantity > 1 && ` × ${item.quantity}`}
                   </div>
+                  {/* Custom tailoring must reach the workroom (H4) */}
+                  {fit.length > 0 && (
+                    <div style={{ marginTop: 6, padding: '8px 10px', background: '#fdf6e3', border: '1px solid rgba(180,83,9,0.25)' }}>
+                      <div style={{ ...F, fontSize: 9, letterSpacing: 1.5, textTransform: 'uppercase', color: '#92400e', fontWeight: 700, marginBottom: 4 }}>
+                        Custom fit &mdash; tailor to these adjustments
+                      </div>
+                      {fit.map(f => (
+                        <div key={f.label} style={{ ...F, fontSize: 11, color: '#15140f' }}>
+                          {f.label}: <strong>{f.value}</strong>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div style={{ fontFamily: "'Prata',serif", fontSize: 15, color: '#15140f', whiteSpace: 'nowrap' }}>
                   {fmt.format(item.price * item.quantity)}
                 </div>
               </div>
-            ))}
+              )
+            })}
             <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 12, borderTop: '1px solid rgba(21,20,15,0.1)', marginTop: 4 }}>
               <div style={{ ...F, fontSize: 13, color: '#15140f', fontWeight: 600 }}>Total</div>
               <div style={{ fontFamily: "'Prata',serif", fontSize: 20, color: '#15140f' }}>{fmt.format(order.total)}</div>

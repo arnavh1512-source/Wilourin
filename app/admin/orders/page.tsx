@@ -42,18 +42,18 @@ export default function AdminOrders() {
   const [expanded, setExpanded] = useState<string | null>(null)
   const [updating, setUpdating] = useState<string | null>(null)
 
-  const load = async (status = '') => {
-    setLoading(true)
-    setError('')
-    const qs = status ? `?status=${status}` : ''
-    const res = await fetch(`/api/admin/orders${qs}`)
-    if (!res.ok) { setError('Failed to load orders.'); setLoading(false); return }
-    const json = await res.json()
-    setOrders(json.data ?? [])
-    setLoading(false)
-  }
-
-  useEffect(() => { load(filter) }, [filter])
+  useEffect(() => {
+    let active = true
+    const qs = filter ? `?status=${filter}` : ''
+    fetch(`/api/admin/orders${qs}`)
+      .then(async res => {
+        if (!res.ok) throw new Error('Failed to load orders.')
+        return res.json()
+      })
+      .then(json => { if (active) { setOrders(json.data ?? []); setError(''); setLoading(false) } })
+      .catch(() => { if (active) { setError('Failed to load orders.'); setLoading(false) } })
+    return () => { active = false }
+  }, [filter])
 
   const updateStatus = async (id: string, status: string) => {
     setUpdating(id)

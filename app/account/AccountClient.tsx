@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
 import { Logo } from '@/components/Logo'
 import NextImage from 'next/image'
-import { useWishlistStore, type WishlistItem } from '@/lib/wishlistStore'
+import { useWishlistStore } from '@/lib/wishlistStore'
 
 const C = {
   marbleBase:  '#f4f1ec',
@@ -61,13 +62,11 @@ export function AccountClient({ user, profile, orders }: Props) {
   const [phone, setPhone] = useState(profile?.phone ?? '')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved]   = useState(false)
-  const [wishlist, setWishlist] = useState<WishlistItem[]>([])
   const wishlistStore = useWishlistStore()
+  // The store is the single source of truth; mirroring it into local state
+  // only risked drift (M7).
+  const wishlist = wishlistStore.items
   const router = useRouter()
-
-  useEffect(() => {
-    setWishlist(wishlistStore.items)
-  }, [wishlistStore.items])
 
   const signOut = async () => {
     await createClient().auth.signOut()
@@ -102,13 +101,13 @@ export function AccountClient({ user, profile, orders }: Props) {
       {/* Header */}
       <div style={{ borderBottom: `1px solid ${C.marbleLine}`, padding: '20px 40px', display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center' }}>
         <div />
-        <a href="/" style={{ display: 'flex', justifyContent: 'center' }}><Logo height={40} /></a>
+        <Link href="/" style={{ display: 'flex', justifyContent: 'center' }}><Logo height={40} /></Link>
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
           {profile?.role === 'admin' && (
-            <a href="/admin" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: C.forestDark, color: C.cream, border: 'none', padding: '8px 20px', fontFamily: "'Raleway',sans-serif", fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', cursor: 'pointer', textDecoration: 'none', fontWeight: 600 }}>
+            <Link href="/admin" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: C.forestDark, color: C.cream, border: 'none', padding: '8px 20px', fontFamily: "'Raleway',sans-serif", fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', cursor: 'pointer', textDecoration: 'none', fontWeight: 600 }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
               Admin
-            </a>
+            </Link>
           )}
           <button onClick={signOut} style={{ background: 'transparent', border: `1px solid ${C.marbleLine}`, padding: '8px 20px', fontFamily: "'Raleway',sans-serif", fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', cursor: 'pointer', color: C.inkFaint }}>
             Sign out
@@ -138,7 +137,7 @@ export function AccountClient({ user, profile, orders }: Props) {
             {orders.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '60px 0' }}>
                 <p style={{ fontFamily: "'Prata',serif", fontSize: 22, color: C.inkFaint, fontStyle: 'italic' }}>No orders yet.</p>
-                <a href="/" style={{ display: 'inline-block', marginTop: 20, fontFamily: "'Raleway',sans-serif", fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', color: C.marbleInk, textDecoration: 'underline' }}>Continue shopping</a>
+                <Link href="/" style={{ display: 'inline-block', marginTop: 20, fontFamily: "'Raleway',sans-serif", fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', color: C.marbleInk, textDecoration: 'underline' }}>Continue shopping</Link>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -183,13 +182,13 @@ export function AccountClient({ user, profile, orders }: Props) {
             {wishlist.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '60px 0' }}>
                 <p style={{ fontFamily: "'Prata',serif", fontSize: 22, color: C.inkFaint, fontStyle: 'italic' }}>Nothing saved yet.</p>
-                <a href="/" style={{ display: 'inline-block', marginTop: 20, fontFamily: "'Raleway',sans-serif", fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', color: C.marbleInk, textDecoration: 'underline' }}>Explore the collection</a>
+                <Link href="/" style={{ display: 'inline-block', marginTop: 20, fontFamily: "'Raleway',sans-serif", fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', color: C.marbleInk, textDecoration: 'underline' }}>Explore the collection</Link>
               </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 24 }}>
                 {wishlist.map((item) => (
                   <div key={item.id} style={{ position: 'relative' }}>
-                    <a href={item.slug ? `/products/${item.slug}` : '/'} style={{ textDecoration: 'none', display: 'block' }}>
+                    <Link href={item.slug ? `/products/${item.slug}` : '/'} style={{ textDecoration: 'none', display: 'block' }}>
                       <div style={{ aspectRatio: '2/3', background: '#fafaf7', border: `1px solid ${C.marbleLine}`, overflow: 'hidden', position: 'relative' }}>
                         <NextImage src={item.img} alt={item.name} fill style={{ objectFit: 'cover', objectPosition: 'top' }} sizes="200px" />
                       </div>
@@ -197,7 +196,7 @@ export function AccountClient({ user, profile, orders }: Props) {
                         <div style={{ fontFamily: "'Prata',serif", fontSize: 16, color: C.marbleInk, lineHeight: 1.2 }}>{item.name}</div>
                         <div style={{ fontFamily: "'Prata',serif", fontSize: 14, color: C.marbleInk, marginTop: 4 }}>₹{Number(item.price).toLocaleString('en-IN')}</div>
                       </div>
-                    </a>
+                    </Link>
                     <button
                       onClick={() => wishlistStore.toggle(item)}
                       style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(244,241,236,0.9)', border: 'none', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}

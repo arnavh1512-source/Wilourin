@@ -57,7 +57,7 @@ export default function PrivacyPage() {
 
         <section style={{ marginBottom: 32 }}>
           <h2 style={{ fontFamily: "'Prata',serif", fontSize: 18, marginBottom: 12 }}>6. Your Rights</h2>
-          <p>You have the right to access, correct, or delete your personal data, and to opt out of marketing communications. Contact us at support@wilourin.com.</p>
+          <p>You have the right to access, correct, or delete your personal data, and to opt out of marketing communications. Contact us at hello@wilourin.com.</p>
         </section>
 
         <section style={{ marginBottom: 32 }}>
@@ -67,12 +67,12 @@ export default function PrivacyPage() {
 
         <section style={{ marginBottom: 32 }}>
           <h2 style={{ fontFamily: "'Prata',serif", fontSize: 18, marginBottom: 12 }}>8. Grievance Officer</h2>
-          <p>In accordance with the Information Technology Act, 2000, our Grievance Officer can be reached at support@wilourin.com for any concerns regarding data practices.</p>
+          <p>In accordance with the Information Technology Act, 2000, our Grievance Officer can be reached at hello@wilourin.com for any concerns regarding data practices.</p>
         </section>
 
         <section style={{ marginBottom: 80 }}>
           <h2 style={{ fontFamily: "'Prata',serif", fontSize: 18, marginBottom: 12 }}>9. Contact</h2>
-          <p>Wilourin<br />Email: support@wilourin.com</p>
+          <p>Wilourin<br />Email: hello@wilourin.com</p>
         </section>
       </main>
       <Footer />

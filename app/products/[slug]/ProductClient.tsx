@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCartStore } from '@/lib/store'
+import { FIT_BOUNDS, FIT_KEYS, FIT_LABELS } from '@/lib/fitBounds'
 
 const C = {
   marbleBase:  '#f4f1ec',
@@ -27,16 +28,20 @@ interface Product {
 
 const SIZE_ORDER = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
-const FIT_MEASURES = [
-  { key: 'chest',  label: 'Chest',  unit: 'cm', min: -6, max: 6, step: 0.5 },
-  { key: 'waist',  label: 'Waist',  unit: 'cm', min: -6, max: 6, step: 0.5 },
-  { key: 'hips',   label: 'Hips',   unit: 'cm', min: -6, max: 6, step: 0.5 },
-  { key: 'length', label: 'Length', unit: 'cm', min: -4, max: 4, step: 0.5 },
-]
+// Bounds are shared with the checkout validation schema so the two cannot drift.
+const FIT_MEASURES = FIT_KEYS.map(key => ({
+  key,
+  label: FIT_LABELS[key],
+  unit: 'cm',
+  ...FIT_BOUNDS[key],
+}))
 
 export function ProductClient({ product }: { product: Product }) {
-  const images = [...product.product_images].sort((a, b) => a.display_order - b.display_order)
-  const variants = product.product_variants ?? []
+  const images = useMemo(
+    () => [...product.product_images].sort((a, b) => a.display_order - b.display_order),
+    [product.product_images]
+  )
+  const variants = useMemo(() => product.product_variants ?? [], [product.product_variants])
 
   const [activeImg, setActiveImg] = useState(0)
   const [selectedSize, setSelectedSize] = useState('')
@@ -47,30 +52,38 @@ export function ProductClient({ product }: { product: Product }) {
 
   const add = useCartStore(s => s.add)
 
+  // Every stored variant is selectable, whatever its label. Known sizes keep
+  // their canonical order; custom labels ("One Size", "38"…) follow, sorted (H5).
   const availableSizes = useMemo(() => {
-    if (variants.length === 0) return []
-    const variantSizes = new Set(variants.map(v => v.size))
-    return SIZE_ORDER.filter(size => variantSizes.has(size))
+    const labels = [...new Set(variants.map(v => v.size))]
+    const known = SIZE_ORDER.filter(s => labels.includes(s))
+    const custom = labels.filter(s => !SIZE_ORDER.includes(s)).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+    return [...known, ...custom]
   }, [variants])
 
   const primaryImage = images.find(img => img.is_primary)?.url ?? images[0]?.url ?? ''
+  const purchasable = variants.length > 0
 
   const handleAdd = () => {
-    if (!selectedSize && variants.length > 0) { setError('Please select a size'); return }
+    // Checkout requires an inventory-bearing variant for every line, so a
+    // product with no variants cannot be bought at all (H3).
+    if (!purchasable) { setError('This piece is not available to order right now.'); return }
+    if (!selectedSize) { setError('Please select a size'); return }
     const variant = variants.find(v => v.size === selectedSize)
-    if (variant && variant.stock_qty === 0) { setError('This size is out of stock'); return }
+    if (!variant) { setError('Please select a size'); return }
+    if (variant.stock_qty === 0) { setError('This size is out of stock'); return }
     setError('')
 
-    const hasCustomFit = Object.values(fit).some(v => v !== 0)
+    const activeFit = Object.fromEntries(Object.entries(fit).filter(([, v]) => v !== 0))
     add({
       id: product.id,
-      variantId: variant?.id,
+      variantId: variant.id,
       name: product.name,
       img: primaryImage,
       price: product.price,
-      size: selectedSize || 'One Size',
+      size: variant.size,
       quantity: 1,
-      customFit: hasCustomFit ? fit : undefined,
+      customFit: Object.keys(activeFit).length > 0 ? activeFit : undefined,
     })
     setAdded(true)
     setTimeout(() => setAdded(false), 2000)
@@ -134,8 +147,8 @@ export function ProductClient({ product }: { product: Product }) {
               Select Size {selectedSize && <span style={{ color: C.marbleInk, fontWeight: 700 }}>— {selectedSize}</span>}
             </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
-              {variants.length === 0 ? (
-                <span style={{ ...F, fontSize: 11, color: C.inkFaint }}>One Size</span>
+              {!purchasable ? (
+                <span style={{ ...F, fontSize: 11, color: C.inkFaint }}>Currently unavailable</span>
               ) : availableSizes.map(size => {
                 const available = sizeAvailable(size)
                 const active = selectedSize === size
@@ -147,7 +160,7 @@ export function ProductClient({ product }: { product: Product }) {
                     aria-pressed={active}
                     aria-label={`Size ${size}${!available ? ' out of stock' : active ? ' selected' : ''}`}
                     style={{
-                      width: 52, height: 52,
+                      minWidth: 52, height: 52, padding: '0 12px',
                       border: `1px solid ${active ? C.marbleInk : C.marbleLine}`,
                       background: active ? C.marbleInk : 'transparent',
                       color: active ? C.cream : available ? C.marbleInk : 'rgba(21,20,15,0.25)',
@@ -179,7 +192,7 @@ export function ProductClient({ product }: { product: Product }) {
             {fitOpen && (
               <div style={{ padding: '0 20px 24px', borderTop: `1px solid ${C.marbleLine}` }}>
                 <p style={{ ...F, fontSize: 12, color: C.inkFaint, marginTop: 16, marginBottom: 20, lineHeight: 1.6 }}>
-                  Use the sliders to add or remove centimetres from your standard size. We'll tailor accordingly.
+                  Use the sliders to add or remove centimetres from your standard size. We&rsquo;ll tailor accordingly.
                 </p>
 
                 {FIT_MEASURES.map(m => {
@@ -222,20 +235,21 @@ export function ProductClient({ product }: { product: Product }) {
           {/* Add to bag */}
           <button
             onClick={handleAdd}
+            disabled={!purchasable}
             style={{
               width: '100%', padding: '16px 0',
-              background: added ? C.forestEmerald : C.forestDark,
+              background: !purchasable ? C.inkFaint : added ? C.forestEmerald : C.forestDark,
               color: C.cream, border: 'none',
               ...F, fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', fontWeight: 600,
-              cursor: 'pointer', transition: 'background 0.3s',
+              cursor: purchasable ? 'pointer' : 'not-allowed', transition: 'background 0.3s',
             }}
           >
-            {added ? '✓ Added to Bag' : 'Add to Bag →'}
+            {!purchasable ? 'Currently Unavailable' : added ? '✓ Added to Bag' : 'Add to Bag →'}
           </button>
 
           {/* Care + Size guide */}
           <div style={{ marginTop: 32, display: 'flex', gap: 24 }}>
-            <a href="/size-guide" style={{ background: 'transparent', border: 'none', cursor: 'pointer', ...F, fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase', color: C.inkFaint, textDecoration: 'underline', padding: 0 }}>Size Guide</a>
+            <Link href="/size-guide" style={{ background: 'transparent', border: 'none', cursor: 'pointer', ...F, fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase', color: C.inkFaint, textDecoration: 'underline', padding: 0 }}>Size Guide</Link>
           </div>
         </div>
       </div>

@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { createAdminClient as createAdmin } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { rateLimit } from '@/lib/rateLimit'
+import { badRequest, dbError } from '@/lib/apiError'
+
+const stockSchema = z.object({
+  variantId: z.string().uuid(),
+  stock_qty: z.number().int().min(0).max(100000),
+}).strict()
 
 async function requireAdmin() {
   const supabase = await createClient()
@@ -21,7 +28,7 @@ export async function GET() {
     .select('id, name, product_variants(id, size, stock_qty)')
     .order('name')
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return dbError('admin:stock', error.message)
   return NextResponse.json({ data })
 }
 
@@ -31,19 +38,18 @@ export async function PATCH(req: NextRequest) {
   if (!await rateLimit(`admin:stock:${user.id}`, 30, 60_000))
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
 
-  const { variantId, stock_qty } = await req.json()
-  if (!variantId || typeof stock_qty !== 'number' || stock_qty < 0 || stock_qty > 100000) {
-    return NextResponse.json({ error: 'variantId and stock_qty between 0–100000 required' }, { status: 400 })
-  }
+  const parsed = stockSchema.safeParse(await req.json())
+  if (!parsed.success) return badRequest(parsed.error.issues[0]?.message)
 
   const admin = createAdmin()
   const { data, error } = await admin
     .from('product_variants')
-    .update({ stock_qty })
-    .eq('id', variantId)
-    .select()
+    .update({ stock_qty: parsed.data.stock_qty })
+    .eq('id', parsed.data.variantId)
+    .select('id, size, stock_qty')
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return dbError('admin:stock', error.message)
+  if (!data) return NextResponse.json({ error: 'Size not found.' }, { status: 404 })
   return NextResponse.json({ data })
 }

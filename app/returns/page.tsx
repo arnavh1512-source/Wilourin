@@ -45,7 +45,7 @@ export default function ReturnsPage() {
 
         <section style={{ marginBottom: 32 }}>
           <h2 style={{ fontFamily: "'Prata',serif", fontSize: 18, marginBottom: 12 }}>4. Exchange Process</h2>
-          <p>To request an exchange, contact us at <strong>support@wilourin.com</strong> with:</p>
+          <p>To request an exchange, contact us at <strong>hello@wilourin.com</strong> with:</p>
           <ul style={{ paddingLeft: 20, marginTop: 8 }}>
             <li>Order ID</li>
             <li>Reason for exchange</li>
@@ -74,7 +74,7 @@ export default function ReturnsPage() {
 
         <section style={{ marginBottom: 80 }}>
           <h2 style={{ fontFamily: "'Prata',serif", fontSize: 18, marginBottom: 12 }}>8. Contact</h2>
-          <p>Wilourin<br />Email: support@wilourin.com</p>
+          <p>Wilourin<br />Email: hello@wilourin.com</p>
         </section>
       </main>
       <Footer />

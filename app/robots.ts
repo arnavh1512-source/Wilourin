@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
 
-const BASE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://wilourin-luxury.vercel.app'
+const BASE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.wilourin.com'
 
 export default function robots(): MetadataRoute.Robots {
   return {

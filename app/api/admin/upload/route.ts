@@ -3,6 +3,7 @@ import crypto from 'crypto'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { rateLimit } from '@/lib/rateLimit'
+import { dbError } from '@/lib/apiError'
 
 const MAX_SIZE = 5 * 1024 * 1024 // 5 MB
 
@@ -53,7 +54,7 @@ export async function POST(req: NextRequest) {
     .from('product-images')
     .upload(fileName, bytes, { contentType, upsert: false })
 
-  if (uploadErr) return NextResponse.json({ error: uploadErr.message }, { status: 500 })
+  if (uploadErr) return dbError('admin:upload', uploadErr.message)
 
   const { data: { publicUrl } } = admin.storage.from('product-images').getPublicUrl(fileName)
   return NextResponse.json({ url: publicUrl })

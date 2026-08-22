@@ -40,7 +40,7 @@ export default function TermsPage() {
         <section style={{ marginBottom: 32 }}>
           <h2 style={{ fontFamily: "'Prata',serif", fontSize: 18, marginBottom: 12 }}>5. Shipping and Delivery</h2>
           <p>We currently ship within India. Delivery timelines are estimates and may vary based on location and logistics. Wilourin is not liable for delays caused by third-party shipping providers.</p>
-          <p style={{ marginTop: 8 }}>Free shipping is available for prepaid orders. Cash-on-delivery orders may incur a nominal handling fee.</p>
+          <p style={{ marginTop: 8 }}>All orders are prepaid; cash on delivery is not offered. Shipping charges, if any, are calculated and displayed at checkout before payment.</p>
         </section>
 
         <section style={{ marginBottom: 32 }}>

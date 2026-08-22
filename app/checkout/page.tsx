@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation'
 import { useCartStore } from '@/lib/store'
 import { createClient } from '@/lib/supabase/client'
 import { Logo } from '@/components/Logo'
+import { shippingFor } from '@/lib/shipping'
+import { useShippingSettings } from '@/lib/useShippingSettings'
 
 const C = {
   marbleBase:  '#f4f1ec',
@@ -23,7 +25,11 @@ declare global { interface Window { Razorpay: new (opts: object) => { open(): vo
 export default function CheckoutPage() {
   const router = useRouter()
   const { items, getTotal, clear } = useCartStore()
-  const total = getTotal()
+  const subtotal = getTotal()
+  const shippingSettings = useShippingSettings()
+  // Display mirrors the server rule; the API recomputes it before charging (M4).
+  const shippingCost = shippingFor(subtotal, shippingSettings)
+  const total = subtotal + shippingCost
 
   const [shipping, setShipping] = useState({ name: '', phone: '', address: '', city: '', state: '', pincode: '' })
   const [paying, setPaying] = useState(false)
@@ -56,10 +62,16 @@ export default function CheckoutPage() {
     const res = await fetch('/api/checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items, shipping, total }),
+      body: JSON.stringify({ items, shipping, subtotal }),
     })
     const data = await res.json()
     if (!res.ok) { setError(data.error ?? 'Payment failed'); setPaying(false); return }
+    // The server is authoritative on price — surface any drift instead of hiding it.
+    if (typeof data.total === 'number' && Math.abs(data.total - total) > 0.01) {
+      setError(`Your order total is ${fmt.format(data.total)}. Please review and try again.`)
+      setPaying(false)
+      return
+    }
 
     const loaded = await loadRazorpay()
     if (!loaded) { setError('Failed to load payment gateway'); setPaying(false); return }
@@ -141,9 +153,26 @@ export default function CheckoutPage() {
             ))}
           </div>
 
-          <div style={{ borderTop: `1px solid ${C.marbleLine}`, paddingTop: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 24 }}>
-            <span style={{ ...F, fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: C.inkFaint }}>Total</span>
-            <span style={{ fontFamily: "'Prata',serif", fontSize: 24, color: C.marbleInk }}>{fmt.format(total)}</span>
+          <div style={{ borderTop: `1px solid ${C.marbleLine}`, paddingTop: 16, marginBottom: 24 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+              <span style={{ ...F, fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: C.inkFaint }}>Subtotal</span>
+              <span style={{ ...F, fontSize: 14, color: C.marbleInk }}>{fmt.format(subtotal)}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
+              <span style={{ ...F, fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: C.inkFaint }}>Shipping</span>
+              <span style={{ ...F, fontSize: 14, color: C.marbleInk }}>
+                {shippingCost === 0 ? 'Free' : fmt.format(shippingCost)}
+              </span>
+            </div>
+            {shippingCost > 0 && (
+              <p style={{ ...F, fontSize: 11, color: C.inkFaint, marginBottom: 12 }}>
+                Free shipping on orders above {fmt.format(shippingSettings.free_shipping_threshold)}.
+              </p>
+            )}
+            <div style={{ borderTop: `1px solid ${C.marbleLine}`, paddingTop: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+              <span style={{ ...F, fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: C.inkFaint }}>Total</span>
+              <span style={{ fontFamily: "'Prata',serif", fontSize: 24, color: C.marbleInk }}>{fmt.format(total)}</span>
+            </div>
           </div>
 
           <button onClick={handlePay} disabled={paying}

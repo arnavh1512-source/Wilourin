@@ -67,7 +67,7 @@ export default function FAQPage() {
           </div>
 
           <p style={S.q}>Is shipping free?</p>
-          <p style={S.a}>We offer free shipping across India for regular orders. For cash-on-delivery (COD) orders, we charge a nominal fee.</p>
+          <p style={S.a}>Shipping is free on orders above the free-shipping threshold shown in your bag. Below it, a flat shipping charge applies, and the exact amount is displayed at checkout before you pay. We currently accept prepaid orders only — cash on delivery is not available.</p>
 
           <p style={S.q}>Do you ship internationally?</p>
           <p style={S.a}>As of now, we only deliver in India.</p>

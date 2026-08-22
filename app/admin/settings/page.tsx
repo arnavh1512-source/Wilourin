@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react'
 
 interface Settings {
-  hero_video_url?: string
-  hero_headline?: string
+  hero_video_url?: string | null
+  hero_headline?: string | null
   free_shipping_threshold?: number
   shipping_cost?: number
 }
@@ -17,6 +17,7 @@ export default function AdminSettings() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     fetch('/api/admin/settings')
@@ -28,9 +29,19 @@ export default function AdminSettings() {
 
   const save = async () => {
     setSaving(true)
-    const res = await fetch('/api/admin/settings', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(settings) })
+    setError('')
+    // Send exactly the writable fields — the API rejects unknown keys, and the
+    // GET response carries an id that must not be echoed back.
+    const payload = {
+      hero_video_url: settings.hero_video_url?.trim() ?? '',
+      hero_headline: settings.hero_headline?.trim() ?? '',
+      free_shipping_threshold: settings.free_shipping_threshold ?? 0,
+      shipping_cost: settings.shipping_cost ?? 0,
+    }
+    const res = await fetch('/api/admin/settings', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+    const json = await res.json().catch(() => null)
     setSaving(false)
-    if (!res.ok) { alert('Failed to save settings. Please try again.'); return }
+    if (!res.ok) { setError(json?.error ?? 'Failed to save settings. Please try again.'); return }
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
@@ -68,15 +79,19 @@ export default function AdminSettings() {
               <div>
                 <label style={{ display: 'block', ...F, fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(21,20,15,0.55)', marginBottom: 6 }}>Free Shipping Above (₹)</label>
                 <input type="number" style={inputStyle} value={settings.free_shipping_threshold ?? ''} placeholder="999"
-                  onChange={e => setSettings(s => ({ ...s, free_shipping_threshold: parseFloat(e.target.value) }))} />
+                  onChange={e => setSettings(s => ({ ...s, free_shipping_threshold: e.target.value === '' ? undefined : parseFloat(e.target.value) }))} />
               </div>
               <div>
                 <label style={{ display: 'block', ...F, fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(21,20,15,0.55)', marginBottom: 6 }}>Flat Shipping Rate (₹)</label>
                 <input type="number" style={inputStyle} value={settings.shipping_cost ?? ''} placeholder="99"
-                  onChange={e => setSettings(s => ({ ...s, shipping_cost: parseFloat(e.target.value) }))} />
+                  onChange={e => setSettings(s => ({ ...s, shipping_cost: e.target.value === '' ? undefined : parseFloat(e.target.value) }))} />
               </div>
             </div>
           </div>
+
+          {error && (
+            <p style={{ ...F, fontSize: 12, color: '#8a2a1f', marginBottom: 16 }}>{error}</p>
+          )}
 
           <button onClick={save} disabled={saving}
             style={{ padding: '13px 32px', background: '#0d2818', color: '#e8e4d8', border: 'none', ...F, fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', cursor: saving ? 'wait' : 'pointer', fontWeight: 600, opacity: saving ? 0.7 : 1 }}>

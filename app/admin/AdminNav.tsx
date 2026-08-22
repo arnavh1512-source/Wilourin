@@ -57,9 +57,9 @@ export function AdminNav() {
       </nav>
 
       <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(232,228,216,0.1)' }}>
-        <a href="/" style={{ display: 'block', fontFamily: "'Raleway',sans-serif", fontSize: 10, letterSpacing: 2, color: 'rgba(232,228,216,0.4)', textDecoration: 'none', marginBottom: 10, textTransform: 'uppercase' }}>
+        <Link href="/" style={{ display: 'block', fontFamily: "'Raleway',sans-serif", fontSize: 10, letterSpacing: 2, color: 'rgba(232,228,216,0.4)', textDecoration: 'none', marginBottom: 10, textTransform: 'uppercase' }}>
           ← View site
-        </a>
+        </Link>
         <button onClick={signOut} style={{ background: 'transparent', border: '1px solid rgba(232,228,216,0.2)', color: 'rgba(232,228,216,0.5)', padding: '8px 16px', fontFamily: "'Raleway',sans-serif", fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', cursor: 'pointer', width: '100%' }}>
           Sign out
         </button>

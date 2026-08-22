@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export default async function AdminDashboard() {
@@ -36,10 +37,10 @@ export default async function AdminDashboard() {
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, marginBottom: 48 }}>
         {stats.map((s) => (
-          <a key={s.label} href={s.href} style={{ background: '#fff', border: '1px solid rgba(21,20,15,0.12)', padding: 24, textDecoration: 'none', transition: 'box-shadow 0.2s', display: 'block' }}>
+          <Link key={s.label} href={s.href} style={{ background: '#fff', border: '1px solid rgba(21,20,15,0.12)', padding: 24, textDecoration: 'none', transition: 'box-shadow 0.2s', display: 'block' }}>
             <div style={{ fontFamily: "'Raleway',sans-serif", fontSize: 9, letterSpacing: 3, color: 'rgba(21,20,15,0.5)', textTransform: 'uppercase', marginBottom: 8 }}>{s.label}</div>
             <div style={{ fontFamily: "'Prata',serif", fontSize: 40, color: '#15140f' }}>{s.value}</div>
-          </a>
+          </Link>
         ))}
       </div>
 
@@ -68,9 +69,9 @@ export default async function AdminDashboard() {
             ))
           )}
         </div>
-        <a href="/admin/orders" style={{ display: 'inline-block', marginTop: 12, fontFamily: "'Raleway',sans-serif", fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(21,20,15,0.55)', textDecoration: 'underline' }}>
+        <Link href="/admin/orders" style={{ display: 'inline-block', marginTop: 12, fontFamily: "'Raleway',sans-serif", fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(21,20,15,0.55)', textDecoration: 'underline' }}>
           View all orders →
-        </a>
+        </Link>
       </div>
     </div>
   )
