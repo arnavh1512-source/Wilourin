@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { fulfillOrder } from '@/lib/fulfillOrder'
+import { refundCapturedPayment } from '@/lib/refunds'
 
 export async function POST(req: NextRequest) {
   const body = await req.text()
@@ -44,9 +45,20 @@ export async function POST(req: NextRequest) {
     if (order) {
       // Same idempotent transactional RPC the browser verification uses (H2).
       const result = await fulfillOrder(admin, order.id, payment.id ?? null)
-      if (result.status === 'out_of_stock' || result.status === 'error') {
-        console.error(`[razorpay:webhook] Fulfilment failed for order ${order.id}: ${result.status}`)
-        // 500 makes Razorpay retry; the RPC is safe to re-run.
+
+      if (result.status === 'out_of_stock') {
+        // Permanent: no number of retries will conjure stock. Refund the
+        // captured payment and acknowledge, so Razorpay stops redelivering (R2).
+        console.error(`[razorpay:webhook] Oversell prevented for order ${order.id}; refunding`)
+        if (payment.id) {
+          await refundCapturedPayment(admin, order.id, payment.id, 'Out of stock at fulfilment')
+        }
+        return NextResponse.json({ ok: true })
+      }
+
+      if (result.status === 'error') {
+        console.error(`[razorpay:webhook] Fulfilment failed for order ${order.id}`)
+        // Transient. 500 makes Razorpay retry; the RPC is safe to re-run.
         return NextResponse.json({ error: 'Fulfilment failed' }, { status: 500 })
       }
     }

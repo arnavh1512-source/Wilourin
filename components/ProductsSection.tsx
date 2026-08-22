@@ -52,6 +52,10 @@ function ProductCard({ p }: { p: Product }) {
     return [...known, ...custom]
   }, [variants])
 
+  // Checkout resolves every line to a real variant, so a product with no
+  // inventory rows is not purchasable from the grid either (R1).
+  const purchasable = variants.length > 0
+
   const isAvailable = (size: string) => {
     const v = variants.find(x => x.size === size)
     return !v || v.stock_qty > 0
@@ -160,7 +164,7 @@ function ProductCard({ p }: { p: Product }) {
           <div onClick={e => e.stopPropagation()} style={{ marginTop: 10, border: `1px solid ${C.marbleLine}`, padding: '12px 12px 14px' }}>
             <div style={{ fontFamily: "'Raleway',sans-serif", fontSize: 8, letterSpacing: 2, textTransform: 'uppercase', color: C.marbleInkFaint, marginBottom: 10 }}>Select Size</div>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              {availableSizes.length > 0 ? availableSizes.map(size => {
+              {availableSizes.map(size => {
                 const avail = isAvailable(size)
                 return (
                   <button key={size} onClick={e => handleSizeClick(e, size)} disabled={!avail}
@@ -169,19 +173,15 @@ function ProductCard({ p }: { p: Product }) {
                     onMouseLeave={e => { const b = e.target as HTMLButtonElement; b.style.background = 'transparent'; b.style.color = avail ? C.marbleInk : 'rgba(21,20,15,0.2)' }}
                   >{size}</button>
                 )
-              }) : (
-                <span style={{ fontFamily: "'Raleway',sans-serif", fontSize: 11, color: C.marbleInkFaint }}>One Size</span>
-              )}
+              })}
             </div>
           </div>
         ) : (
-          <button onClick={e => {
-            if (availableSizes.length > 0) { toggleSize(e); return }
-            e.preventDefault(); e.stopPropagation()
-            add({ id: p.id, name: p.name, img: img1 ?? '', price: p.price, size: 'One Size', quantity: 1 })
-            setAdded(true); setTimeout(() => setAdded(false), 2000)
-          }} style={{ marginTop: 10, padding: '13px 0', background: added ? C.forestDark : hover ? C.forestDark : 'transparent', color: added ? C.cream : hover ? C.cream : C.marbleInk, border: `1px solid ${C.marbleLine}`, fontFamily: "'Raleway',sans-serif", fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', fontWeight: 600, textAlign: 'center', transition: 'background 0.25s, color 0.25s', cursor: 'pointer' }}>
-            {added ? '✓ Added to Bag' : availableSizes.length > 0 ? 'Select Size →' : 'Add to Bag →'}
+          <button
+            onClick={toggleSize}
+            disabled={!purchasable}
+            style={{ marginTop: 10, padding: '13px 0', background: purchasable && (added || hover) ? C.forestDark : 'transparent', color: !purchasable ? 'rgba(21,20,15,0.35)' : added || hover ? C.cream : C.marbleInk, border: `1px solid ${C.marbleLine}`, fontFamily: "'Raleway',sans-serif", fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', fontWeight: 600, textAlign: 'center', transition: 'background 0.25s, color 0.25s', cursor: purchasable ? 'pointer' : 'not-allowed' }}>
+            {!purchasable ? 'Currently Unavailable' : added ? '✓ Added to Bag' : 'Select Size →'}
           </button>
         )}
       </div>

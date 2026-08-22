@@ -6,6 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { rateLimit } from '@/lib/rateLimit'
 import { clientIp, missingPaymentConfig, paymentsUnavailable } from '@/lib/payments'
 import { fulfillOrder } from '@/lib/fulfillOrder'
+import { refundCapturedPayment } from '@/lib/refunds'
 
 const verifySchema = z.object({
   orderId:             z.string().uuid(),
@@ -77,11 +78,23 @@ export async function POST(req: NextRequest) {
     case 'confirmed':
     case 'already_fulfilled':
       return NextResponse.json({ success: true })
-    case 'out_of_stock':
+    case 'out_of_stock': {
+      // The money is already captured, so promising a refund is not enough —
+      // issue it, and fall back to the admin queue if Razorpay declines (R2).
+      const refund = await refundCapturedPayment(
+        admin, orderId, razorpay_payment_id,
+        'Out of stock at fulfilment'
+      )
       return NextResponse.json(
-        { error: 'Stock changed during payment. Your payment will be refunded — please contact support.' },
+        {
+          error: refund.refunded
+            ? 'That size sold out while your payment was going through. Your order was cancelled and a full refund has been issued to your original payment method — it usually appears within 5–7 working days.'
+            : 'That size sold out while your payment was going through. Your order was cancelled and our team has been alerted to refund you. Please contact hello@wilourin.com if you do not hear from us within 24 hours.',
+          refundIssued: refund.refunded,
+        },
         { status: 409 }
       )
+    }
     case 'not_claimable':
       return NextResponse.json({ error: 'Order cannot be confirmed' }, { status: 409 })
     default:

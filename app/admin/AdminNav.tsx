@@ -11,6 +11,7 @@ const LINKS = [
   { href: '/admin/orders',    label: 'Orders',     icon: '◱' },
   { href: '/admin/stock',     label: 'Stock',      icon: '◧' },
   { href: '/admin/customers', label: 'Customers',  icon: '◎' },
+  { href: '/admin/refunds',   label: 'Refunds',    icon: '◐' },
   { href: '/admin/settings',  label: 'Settings',   icon: '◆' },
 ]
 
